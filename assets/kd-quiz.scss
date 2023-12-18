@@ -1,0 +1,230 @@
+.kd-quiz-card {
+  perspective: 1000px; /* For flip effect */
+  position: relative; /* Context for absolutely positioned children */
+  width: 100%; /* Or a specific width as needed */
+
+  .kd-question {
+    padding: 20px;
+    margin: 0;
+    margin-top: 0.5rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-size: 1.2rem;
+    text-shadow: -0px 2px 0 rgba(0, 0, 0, 0.25);
+  }
+
+  .kd-action {
+    background: none;
+    color: inherit;
+    border: none;
+    font: inherit;
+    cursor: pointer;
+    outline: inherit;
+
+    display: inline-block;
+    position: absolute;
+    right: 1rem;
+    bottom: 1rem;
+    padding: 6px 18px;
+    font-weight: 600;
+  }
+
+  .kd-card-inner {
+    transition: transform 1s ease-in-out;
+    transform-style: preserve-3d;
+    position: relative;
+  }
+
+  .kd-card-face {
+    backface-visibility: hidden;
+    padding: 1rem 1rem;
+  }
+
+  .kd-card-back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transform: rotateY(180deg);
+  }
+
+  .kd-options {
+    list-style-type: none; /* Remove bullets */
+    padding: 0; /* Remove default padding */
+    margin: 0; /* Adjust margin as needed */
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around; /* Adjust spacing between options */
+    gap: 10px; /* Space between rows and columns */
+  }
+
+  .kd-option {
+    flex: 0 0 48%; /* Adjust to fit two items per row */
+    text-decoration: none; /* Remove text underline */
+    box-sizing: border-box;
+    padding: 8px 8px; /* Padding inside the button */
+    margin-bottom: 10px; /* Space between buttons */
+    border: none; /* Remove border */
+    cursor: pointer; /* Change cursor to pointer */
+    display: inline-block; /* Make the list item a block element */
+    text-decoration: none; /* Remove text underline */
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Adjust breakpoint as needed */
+  .kd-quiz-card {
+    .kd-option {
+      flex: 0 0 100%; /* Adjust to fit four items per row */
+    }
+  }
+}
+
+/* The flipped class and its effect on the card faces */
+.kd-quiz-card.kd-flipped .kd-card-inner {
+  transform: rotateY(180deg);
+}
+
+//
+// mixins
+//
+@mixin svg-background-correct($fill-color) {
+  $svg: "data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8' standalone='no'%3F%3E%3Csvg version='1.1' viewBox='0 0 1200 1200' xmlns='http://www.w3.org/2000/svg'%3E%3Cg id='g6'%3E%3Cpath fill='%23#{$fill-color}' d='m600 30c-314.4 0-570 255.6-570 570s255.6 570 570 570 570-255.6 570-570-255.6-570-570-570zm0 1048.8c-264 0-478.8-214.8-478.8-478.8s214.8-478.8 478.8-478.8 478.8 214.8 478.8 478.8-214.8 478.8-478.8 478.8z' id='path4' /%3E%3Cg id='g319' transform='matrix(1.1462962,0,0,1.1462962,-91.481592,-146.59124)'%3E%3Crect style='fill:%23#{$fill-color};stroke-width:0.75' id='rect293' width='522.29797' height='88.80233' x='-237.60172' y='906.16516' transform='rotate(-45)' /%3E%3Crect style='fill:%23#{$fill-color};stroke-width:0.75' id='rect293-7' width='276.08435' height='92.107201' x='-995.06702' y='-241.276' transform='rotate(-135)' ry='0' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E%0A";
+  background-image: url("#{$svg}");
+}
+
+@mixin svg-background-incorrect($fill-color) {
+  $svg: "data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8'%3F%3E%3Csvg version='1.1' viewBox='0 0 1200 1200' xmlns='http://www.w3.org/2000/svg'%3E%3Cg%3E%3Cpath fill='%23#{$fill-color}' d='m740.4 396-140.4 139.2-140.4-139.2-63.602 63.602 139.2 140.4-139.2 140.4 63.602 63.602 140.4-139.2 140.4 139.2 63.602-63.602-139.2-140.4 139.2-140.4z'/%3E%3Cpath fill='%23#{$fill-color}' d='m600 30c-314.4 0-570 255.6-570 570s255.6 570 570 570 570-255.6 570-570-255.6-570-570-570zm0 1048.8c-264 0-478.8-214.8-478.8-478.8s214.8-478.8 478.8-478.8 478.8 214.8 478.8 478.8-214.8 478.8-478.8 478.8z'/%3E%3C/g%3E%3C/svg%3E%0A";
+  background-image: url("#{$svg}");
+}
+
+@mixin kd-quiz-card-style(
+  $front-bg,
+  $back-bg,
+  $option-bg,
+  $option-hover-bg,
+  $text-color: #fff,
+  $font-size: 0.9rem,
+  $font-weight: 600
+) {
+  .kd-card-face {
+    border-radius: 1rem;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.25);
+  }
+
+  .kd-question {
+    font-weight: $font-weight;
+  }
+
+  .kd-card-front {
+    background: linear-gradient(
+      15deg,
+      $front-bg,
+      lighten($front-bg, 5%),
+      $front-bg
+    );
+    color: $text-color;
+  }
+
+  .kd-card-back {
+    background: linear-gradient(
+      15deg,
+      $back-bg,
+      lighten($back-bg, 5%),
+      $back-bg
+    );
+    color: $text-color;
+  }
+
+  .kd-option {
+    background-color:$option-bg;
+    color: $text-color;
+    border: none;
+    border-radius: 6px;
+    text-align: center;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    font-size: $font-size;
+    padding: 0.5rem 1rem;
+    margin: 0.2rem 0;
+  }
+
+  .kd-correct,
+  .kd-incorrect {
+    text-align: center;
+    font-weight: 600;
+    text-transform: uppercase;
+    text-shadow: -0px 2px 0 rgba(0, 0, 0, 0.25);
+    vertical-align: middle;
+
+    .kd-answer-icon {
+      width: 2rem;
+      height: 2rem;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 0.5rem;
+    }
+  }
+
+  $svg-fill-color-without-hash: str-slice(inspect($text-color), 2, -1);
+
+  .kd-correct .kd-answer-icon {
+    @include svg-background-correct($svg-fill-color-without-hash);
+  }
+
+  .kd-incorrect .kd-answer-icon {
+    @include svg-background-incorrect($svg-fill-color-without-hash);
+  }
+
+  .kd-action {
+    background-color: $option-bg;
+    color: $text-color;
+    border-radius: 6px;
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.25);
+  }
+
+  .kd-option:hover {
+    box-shadow: 0 0 10px 5px rgba($option-hover-bg, 0.5);
+    background-color: $option-hover-bg;
+  }
+
+  .kd-action:hover {
+    background-color: $option-hover-bg;
+  }
+}
+
+//
+// kd_quiz_style_1 => Vibrant Look
+//
+.kd-quiz-card.kd_quiz_style_1 {
+  @include kd-quiz-card-style(#06a77d, #f1a208, #005f73, #e63946);
+}
+
+//
+// kd_quiz_style_2 => Light Look
+//
+.kd-quiz-card.kd_quiz_style_2 {
+  @include kd-quiz-card-style(
+    #f0f0f0,
+    #fafafa,
+    #e0e0e0,
+    #06caf1,
+    $text-color: #333
+  );
+}
+
+//
+// kd_quiz_style_3 => Vibrant Look
+//
+.kd-quiz-card.kd_quiz_style_3 {
+  @include kd-quiz-card-style(
+    #e63946,
+    #f1a208,
+    #80f1d3,
+    #005f73,
+    $text-color: #333,
+    $font-size: 1rem,
+    $font-weight: 700
+  );
+}
