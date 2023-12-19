@@ -17,28 +17,14 @@ include_list=("LICENSE" "kd-quiz.php" "includes" "assets")
 top_level_folder_name="kd-quiz"
 
 # Temp directory path
-temp_dir="/tmp/${top_level_folder_name}"
+root_temp_dir=$(mktemp -d)
+temp_dir="${root_temp_dir}/${top_level_folder_name}"
 
 # Get the script's directory
-script_dir="$(dirname "$0")"
+script_dir=$(realpath "$(dirname "$0")")
 
 # Output directory for the zip file (inside the script's directory)
 output_dir="${script_dir}/releases"
-
-# Lock file location
-lock_file="/tmp/${top_level_folder_name}.lock"
-
-# Check for lock file
-if [ -e "$lock_file" ]; then
-    echo "Script is already running."
-    exit 1
-fi
-
-# Create lock file
-touch "$lock_file"
-
-# Ensure removal of the existing temp directory, if it exists
-rm -rf "$temp_dir"
 
 # Create the temp directory
 mkdir -p "$temp_dir"
@@ -54,11 +40,16 @@ done
 # Remove existing archives
 rm -f "${output_dir}/${top_level_folder_name}-${version}.zip"
 
-# Create the ZIP file with the version suffix and exclude hidden files/folders
-zip -r "${output_dir}/${top_level_folder_name}-${version}.zip" "$temp_dir" -x "*/.*" -x ".*"
+# Navigate to the temp directory
+cd "${root_temp_dir}" || { echo "Failed to change directory"; exit 1; }
 
-# Clean up: Remove the temporary directory and lock file
-rm -rf "$temp_dir"
-rm -f "$lock_file"
+# Create the ZIP file with the version suffix and exclude hidden files/folders
+zip -r "${output_dir}/${top_level_folder_name}-${version}.zip" ${top_level_folder_name} -x "*/.*" -x ".*"
+
+# Navigate back to the original directory
+cd - || { echo "Failed to change directory"; exit 1; }
+
+# Clean up: Remove the temporary directory
+rm -rf "$root_temp_dir"
 
 echo "ZIP archive created in $output_dir/${top_level_folder_name}-${version}.zip"
