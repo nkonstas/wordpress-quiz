@@ -71,6 +71,38 @@
     text-decoration: none; /* Remove text underline */
     box-sizing: border-box;
   }
+
+  .kd-final-grade {
+    font-size: 2rem;
+    margin: 0;
+    text-align: center;
+
+    > span {
+      display: inline-block;
+      width: 4rem;
+      height: 4rem;
+      line-height: 4rem;
+      background: #fff;
+      color: #222;
+      text-align: center;
+      border-radius: 50%;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+  }
+
+  .kd-final-score {
+    margin-top: 0;
+    font-size: 0.85rem;
+    text-align: center;
+    opacity: 0.75;
+    text-transform: uppercase;
+  }
+
+  .kd-final-message {
+    text-align: center;
+    font-weight: 600;
+  }
 }
 
 @media (max-width: 768px) {
@@ -139,7 +171,7 @@
   }
 
   .kd-option {
-    background-color:$option-bg;
+    background-color: $option-bg;
     color: $text-color;
     border: none;
     border-radius: 6px;
@@ -198,7 +230,7 @@
 // kd_quiz_style_1 => Vibrant Look
 //
 .kd-quiz-card.kd_quiz_style_1 {
-  @include kd-quiz-card-style(#06a77d, #f1a208, #005f73, #e63946);
+  @include kd-quiz-card-style(#06a77d, #234, #005f73, #e63946);
 }
 
 //
@@ -215,16 +247,14 @@
 }
 
 //
-// kd_quiz_style_3 => Vibrant Look
+// kd_quiz_style_3 => Dark Look
 //
 .kd-quiz-card.kd_quiz_style_3 {
   @include kd-quiz-card-style(
-    #e63946,
-    #f1a208,
-    #80f1d3,
-    #005f73,
-    $text-color: #333,
-    $font-size: 1rem,
-    $font-weight: 700
+    #333,
+    #111,
+    #000,
+    #661166,
+    $text-color: #fff
   );
 }

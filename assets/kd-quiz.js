@@ -196,8 +196,8 @@ class kdQuiz {
       ? "kd-correct"
       : "kd-incorrect";
     feedbackText.innerHTML = this.isAnswerCorrect
-      ? '<span class="kd-answer-icon"></span>Correct Answer!'
-      : '<span class="kd-answer-icon"></span>Sorry, wrong answer.';
+      ? '<span class="kd-answer-icon"></span>' + kdQuizAjax.text_correct_answer
+      : '<span class="kd-answer-icon"></span>' + kdQuizAjax.text_wrong_answer;
 
     const explanationText = document.createElement("p");
     explanationText.className = "kd-answer";
@@ -212,25 +212,71 @@ class kdQuiz {
     nextButton.className = "kd-action";
 
     if (this.currentQuestionIndex < this.questionsData.length - 1) {
-      nextButton.textContent = "Next Question";
+      nextButton.textContent = kdQuizAjax.text_next_question_raw;
       nextButton.addEventListener("click", () => {
         this.currentQuestionIndex++;
         this.loadQuestion();
         this.quizElement.classList.remove("kd-flipped");
       });
     } else {
-      nextButton.textContent = "View your Score";
+      nextButton.textContent = kdQuizAjax.text_next_view_score_raw;
       nextButton.addEventListener("click", () => {
-        const finalScore = document.createElement("p");
-        finalScore.textContent = `Your score: ${this.correctAnswersCount} out of ${this.questionsData.length}`;
-        const cardBack = this.quizElement.querySelector(".kd-card-back");
-        cardBack.innerHTML = ""; // Clear previous content
-        cardBack.appendChild(finalScore);
+        this.displayFinalScore(
+          this.correctAnswersCount,
+          this.questionsData.length
+        );
+        this.quizElement.classList.remove("kd-flipped");
       });
     }
 
     const cardBack = this.quizElement.querySelector(".kd-card-back");
     cardBack.appendChild(nextButton);
+  }
+
+  getGrade(scorePercentage) {
+    if (scorePercentage >= 90) return "A";
+    if (scorePercentage >= 70) return "B";
+    if (scorePercentage >= 50) return "C";
+    return "F";
+  }
+
+  displayFinalScore(correctAnswersCount, totalQuestions) {
+    const scorePercentage = (correctAnswersCount / totalQuestions) * 100;
+    const grade = this.getGrade(scorePercentage);
+
+    let gradeClass;
+    let gradeText;
+    let feedbackMessage;
+    switch (grade) {
+      case "A":
+        gradeClass = "kd-final-a";
+        gradeText = kdQuizAjax.kd_quiz_text_score_grade_a;
+        feedbackMessage = kdQuizAjax.kd_quiz_text_score_grade_a_message;
+        break;
+      case "B":
+        gradeClass = "kd-final-b";
+        gradeText = kdQuizAjax.kd_quiz_text_score_grade_b;
+        feedbackMessage = kdQuizAjax.kd_quiz_text_score_grade_b_message;
+        break;
+      default:
+      case "C":
+        gradeClass = "kd-final-c";
+        gradeText = kdQuizAjax.kd_quiz_text_score_grade_c;
+        feedbackMessage = kdQuizAjax.kd_quiz_text_score_grade_c_message;
+        break;
+      case "F":
+        gradeClass = "kd-final-f";
+        gradeText = kdQuizAjax.kd_quiz_text_score_grade_f;
+        feedbackMessage = kdQuizAjax.kd_quiz_text_score_grade_f_message;
+        break;
+    }
+
+    this.cardFront.innerHTML = `
+        <div class="${gradeClass}">
+        <p class="kd-final-grade">${kdQuizAjax.kd_quiz_text_score_grade} <span>${gradeText}</span></p>
+        <p class="kd-final-score">${kdQuizAjax.kd_quiz_text_score_percentage} ${scorePercentage.toFixed(0)}%</p>
+        <p class="kd-final-message">${feedbackMessage}</p>
+        </div>`;
   }
 
   // Additional methods like handleVisibility can be added here
