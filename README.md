@@ -54,7 +54,9 @@ The HTML structure for the quiz questions and answers is outlined below. To cust
         </ul>
       </div>
 	   <div class="kd-card-face kd-card-back">
-	     <p class="kd-incorrect"><span class="kd-answer-icon"></span>Sorry, wrong answer.</p>
+	     <p class="kd-incorrect">
+               <span class="kd-answer-icon"></span>Sorry, wrong answer.
+             </p>
 	     <p class="kd-answer">Some explation.</p>
 	     <button class="kd-action">Next Question</button>
 	   </div>
