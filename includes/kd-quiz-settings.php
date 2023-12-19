@@ -20,6 +20,7 @@ function kd_get_quiz_styles() {
         'kd_quiz_style_1' => 'Vibrant Look',
         'kd_quiz_style_2' => 'Light Look',
         'kd_quiz_style_3' => 'Dark Look',
+        'kd_quiz_style_custom' => 'Custom',
         // Add more styles as needed
     );
 }
