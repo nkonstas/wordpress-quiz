@@ -37,7 +37,10 @@ function kd_quiz_settings_page() {
 
             <div class="kd-text-replacements">
                 <p><strong>Below is an overview on how the text replacements are used in the quiz cards.</strong></p>
-                <p>The four grades (A, B, C, F) are defined as:</p>
+                <hr>
+                <p><strong>Find out how to customize the style <a target="_blank" href="https://github.com/nkonstas/wordpress-quiz">on the project page</a></strong></p>
+                <hr>
+                <p><strong>The four grades (A, B, C, F) are defined as:</strong></p>
                 <ul>
                     <li>Grade A is a score of at least 90%</li>
                     <li>Grade B is a score of at least 70%</li>
@@ -195,7 +198,7 @@ function kd_quiz_number_questions_callback() {
 
 function kd_quiz_card_style_callback() {
     $styles = kd_get_quiz_styles();
-    $current_value = get_option('kd_quiz_card_style', 'style1'); // Default to 'style1'
+    $current_value = get_option('kd_quiz_card_style', 'kd_quiz_style_1'); // Default to 'kd_quiz_style_1'
 
     echo '<select name="kd_quiz_card_style">';
     foreach ($styles as $id => $name) {
