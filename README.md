@@ -34,9 +34,9 @@ Contributions to KDQuiz are welcome! Feel free to fork the repository, make your
 The plugin comes with four predefined styles: vibrant, light, dark, and custom. When the custom style is selected, the container class for the quiz has the class `kd_quiz_style_custom`. This allows for extensive customization using CSS to style virtually every aspect of the quiz card.
 
 
-###HTML And CSS Classes 
+### HTML And CSS Classes 
 
-####Questions & Answers
+#### Questions & Answers
 
 The HTML structure for the quiz questions and answers is outlined below. To customize specific elements within the quiz, use the selector `.kd_quiz_style_custom .<nested class>`. This approach offers flexibility in styling, allowing for unique visual presentations of the quiz elements. However, it's recommended to avoid styling the `kd-card-inner` class directly, as it's integral to the card flip animation, and modifying it may impact the quiz's interactive functionality.
 
@@ -62,7 +62,7 @@ The HTML structure for the quiz questions and answers is outlined below. To cust
   </div>
 </div>
 ```
-####Score Card
+#### Score Card
 The score card is displayed after the quiz is completed, showcasing the user's performance. It's placed inside the `.kd-card-front` element, replacing the last question. The score card is wrapped in a `div` with a grade-specific class, which can be `kd-final-a`, `kd-final-b`, `kd-final-c`, or `kd-final-f`, reflecting the user's grade. These classes can be styled to highlight different performance levels visually. For example, `kd-final-a` could be styled with a bright, positive color to denote excellent performance, while `kd-final-f` might use a more subdued palette.
 
 ```html
