@@ -150,9 +150,6 @@ add_action('admin_init', function () {
             'kd-quiz-settings',
             'kd_quiz_settings_text_section'
         );
-    
-        // For wp_localize_script
-        $script_replacements['text_' . $setting['id']] = get_option('kd_quiz_' . $setting['id']);
     }  
 
     if (isset($_POST['action']) && $_POST['action'] === 'reset_quiz_stats') {
