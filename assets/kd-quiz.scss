@@ -2,6 +2,8 @@
   perspective: 1000px; /* For flip effect */
   position: relative; /* Context for absolutely positioned children */
   width: 100%; /* Or a specific width as needed */
+  margin-top: 20px;
+  margin-bottom: 20px;
 
   .kd-question {
     padding: 20px;
