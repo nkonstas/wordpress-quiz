@@ -3,6 +3,10 @@
 ## Introduction
 KDQuiz is a simple WordPress plugin designed to enhance user engagement through interactive quizzes. It allows users to craft their own questions and precisely control the display of quizzes on their website, ensuring a non-intrusive yet engaging experience for visitors.
 
+## Demo
+
+You can find a demo of the plug in this [winter salad recipe](https://ketodiet.com/winter-salad-with-roast-pumpkin-feta-and-cranberries/#kd-quiz-container) where the user is presented with questions relevant to low carb cooking which is that the website is about. This is key to using this plug in, the questions you create have to be relevant to your content to maximise engagement.
+
 ## Features
 - **Customizable Quizzes**: Create your own questions and tailor the quiz to match your website's content and style.
 - **Flexible Display Options**: Unlike pop-up quizzes, KDQuiz provides a seamless integration with your website's content. 
