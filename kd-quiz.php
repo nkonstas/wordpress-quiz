@@ -11,12 +11,12 @@
  * Plugin Name:       Interactive Quiz
  * Plugin URI:        https://github.com/nkonstas/wordpress-quiz
  * Description:       Allows you to create a simple interactive quiz on any page or post
- * Version:           1.0.0
+ * Version:           1.0.1
  * Requires at least: 5.2
  * Requires PHP:      7.2
  * Author:            Nikos Konstas
  * Author URI:        https://twitter.com/nkonstas
- * License:           GPL v2 or later
+ * License:           GPL v3 or later
  * License URI:       https://github.com/nkonstas/wordpress-quiz/blob/main/LICENSE
  * Text Domain:       kd-quiz
  */

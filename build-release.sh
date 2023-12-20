@@ -11,7 +11,7 @@ fi
 version="$1"
 
 # Define the list of files and folders to include
-include_list=("LICENSE" "kd-quiz.php" "includes" "assets")
+include_list=("LICENSE" "readme.txt" "kd-quiz.php" "includes" "assets")
 
 # Define the top-level folder name inside the zip
 top_level_folder_name="kd-quiz"
