@@ -22,7 +22,7 @@ The primary goal of KDQuiz is to increase user interaction and engagement on you
 3. **Shortcode Usage**: Insert `[kd-quiz]` shortcode anywhere in your post or page to display the quiz. *Please note that currenty a page or post can only have one quiz*.
 4. **Setting Auto-Insertion Rules**: Configure rules for automatic quiz insertion in pages without the shortcode. This is an optional step, if you prefer precise positioning control use the shortcode above.
 
-##Quick Guide
+## Quick Guide
 
 ### Adding / Managing Questions and Viewing Interaction Stats
 
