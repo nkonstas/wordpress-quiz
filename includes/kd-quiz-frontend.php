@@ -51,7 +51,7 @@ add_action( 'wp_enqueue_scripts', function () {
 
     // Enqueue the script and stylesheet with their file timestamps as versions
     wp_enqueue_style( 'kd-quiz-style', $style_url, array(), $style_version );
-    wp_enqueue_script( 'kd-quiz-script', $script_url, array('jquery'), $script_version );
+    wp_enqueue_script( 'kd-quiz-script', $script_url, array(), $script_version );
 
     $replacements = array(
         'ajax_url' => admin_url('admin-ajax.php'),

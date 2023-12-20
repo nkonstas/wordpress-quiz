@@ -22,6 +22,33 @@ The primary goal of KDQuiz is to increase user interaction and engagement on you
 3. **Shortcode Usage**: Insert `[kd-quiz]` shortcode anywhere in your post or page to display the quiz. *Please note that currenty a page or post can only have one quiz*.
 4. **Setting Auto-Insertion Rules**: Configure rules for automatic quiz insertion in pages without the shortcode. This is an optional step, if you prefer precise positioning control use the shortcode above.
 
+##Quick Guide
+
+### Adding / Managing Questions and Viewing Interaction Stats
+
+- **Adding Questions**: To add a new quiz question, navigate to 'Quiz Questions' and click 'Add New Question'. Fill in the question and answer fields as prompted.
+- **Managing Questions**: You can view and manage all questions under the 'All Questions' section. Here you can edit, delete, or view the details of each question.
+- **Interaction Stats**: Each question displays interaction statistics, showing the engagement percentage and average score, which helps you understand how users are interacting with the questions.
+
+![Alt text for the image](./screenshots/manage-questions.jpg)
+
+### Settings - Styling and Auto-Insertion Configuration
+
+- **Styling**: In 'Settings', you can customize the appearance of your quiz by selecting a 'Card Style' from the dropdown menu or creating a custom style.
+- **Auto-Insertion**: Enable automatic quiz insertion into posts/pages by checking the 'Enable Automatic Quiz Insertion' box. Configure which headings (h2, h3, etc.) trigger quiz insertion with 'Heading Selector' and 'Heading Match Pattern'.
+- **Feedback Customization**: Customize the feedback messages for wrong and correct answers, as well as the text for 'Next Question' and 'View Score' buttons.
+
+![Alt text for the image](./screenshots/quiz-settings.jpg)
+
+### Import - Batch Importing Quiz Questions
+
+- **Batch Import**: The 'Import Questions' section allows for a bulk import of quiz questions. Prepare your questions in a JSON format, adhering to the structure shown in the example.
+- **JSON Format**: Ensure each question object includes "questionText", an array of "options" with "optionId" and "optionText", the "correctOptionId", and an "explanation" for feedback.
+- **Importing**: Once your JSON file is prepared, use the 'Import Questions' button to upload your file and add multiple questions to your quiz at once.
+
+![Alt text for the image](./screenshots/batch-import.jpg)
+
+
 ## Directory Structure
 - `assets/`: Contains static resources like CSS, JavaScript, and images.
 - `includes/`: PHP include files and other components.

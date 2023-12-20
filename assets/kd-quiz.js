@@ -109,40 +109,47 @@ class kdQuiz {
   }
 
   incrementQuestionViewCount(questionId) {
-    jQuery.post(
-      kdQuizAjax.ajax_url,
-      {
+    fetch(kdQuizAjax.ajax_url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
         action: "kd_increment_view_count",
         nonce: kdQuizAjax.nonce,
-        question_id: questionId,
-      },
-      function (response) {
-        if (!response.success) {
-          console.error(
-            "Failed to increment view count for question ID:",
-            questionId
-          );
-        }
+        question_id: questionId
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (!data.success) {
+        console.error("Failed to increment view count for question ID:", questionId);
       }
-    );
+    })
+    .catch(error => console.error('Error:', error));
   }
 
   recordQuizAnswer(questionId, isCorrect) {
-    jQuery.post(
-      kdQuizAjax.ajax_url,
-      {
+    fetch(kdQuizAjax.ajax_url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
         action: "kd_record_answer",
         nonce: kdQuizAjax.nonce,
         question_id: questionId,
         is_correct: isCorrect,
-      },
-      function (response) {
-        if (!response.success) {
-          console.error("Failed to record answer for question ID:", questionId);
-        }
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (!data.success) {
+        console.error("Failed to record answer for question ID:", questionId);
       }
-    );
-  }
+    })
+    .catch(error => console.error('Error:', error));
+  }  
 
   updateFrontFace() {
     // Clear previous content in the front face
@@ -341,24 +348,29 @@ class kdQuizMgr {
 
   fetchQuestionsAndCreateQuiz(el) {
     const viewedQuestions = localStorage.getItem("viewedQuestions") || "[]";
-
-    jQuery.post(
-      kdQuizAjax.ajax_url,
-      {
+  
+    fetch(kdQuizAjax.ajax_url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
         action: "kd_fetch_random_questions",
         number: kdQuizAjax.questions,
         nonce: kdQuizAjax.nonce,
         viewed_questions: viewedQuestions,
-      },
-      function (response) {
-        if (response.success) {
-          const quiz = new kdQuiz(response.data, kdQuizAjax.style, el);
-        } else {
-          console.error("Failed to fetch quiz questions.");
-        }
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        const quiz = new kdQuiz(data.data, kdQuizAjax.style, el);
+      } else {
+        console.error("Failed to fetch quiz questions.");
       }
-    );
-  }
+    })
+    .catch(error => console.error('Error:', error));
+  }  
 }
 
 const manager = new kdQuizMgr();
