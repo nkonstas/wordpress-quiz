@@ -11,8 +11,8 @@
  * Plugin Name:       Interactive Quiz
  * Plugin URI:        https://github.com/nkonstas/wordpress-quiz
  * Description:       Allows you to create a simple interactive quiz on any page or post
- * Version:           1.0.2
- * Requires at least: 5.2
+ * Version:           1.1.0
+ * Requires at least: 5.4
  * Requires PHP:      7.2
  * Author:            Nikos Konstas
  * Author URI:        https://twitter.com/nkonstas
@@ -23,12 +23,15 @@
 
 namespace KDQuiz;
 
-// If this file is called directly, abort.
+// Stop execution early when someone hits the file directly.
 if (!defined('WPINC')) {
     die;
 }
 
-function kd_safe_include($file) {
+/**
+ * Prevent fatals when an optional include goes missing in production.
+ */
+function kdquiz_safe_include($file) {
     if (!@include_once($file)) {
         // Handle the error, e.g., log it or notify the admin
         // For example, writing to a log file or using error_log()
@@ -36,14 +39,15 @@ function kd_safe_include($file) {
     }
 }
 
-kd_safe_include( __DIR__ . '/includes/kd-quiz-shared.php' );
-kd_safe_include( __DIR__ . '/includes/kd-quiz-frontend.php' );
-kd_safe_include( __DIR__ . '/includes/kd-quiz-ajax.php' );
+kdquiz_safe_include( __DIR__ . '/includes/kd-quiz-shared.php' );
+kdquiz_safe_include( __DIR__ . '/includes/kd-quiz-frontend.php' );
+kdquiz_safe_include( __DIR__ . '/includes/kd-quiz-ajax.php' );
 
 add_action('plugins_loaded', function () {
+    // Only load admin tooling for people who can actually use it.
     if ( is_user_logged_in() && current_user_can( 'edit_posts' ) ) {
-        kd_safe_include( __DIR__ . '/includes/kd-quiz-settings.php' );
-        kd_safe_include( __DIR__ . '/includes/kd-quiz-import.php' );
-        kd_safe_include( __DIR__ . '/includes/kd-quiz-editing.php' );   
+        kdquiz_safe_include( __DIR__ . '/includes/kd-quiz-settings.php' );
+        kdquiz_safe_include( __DIR__ . '/includes/kd-quiz-import.php' );
+        kdquiz_safe_include( __DIR__ . '/includes/kd-quiz-editing.php' );   
     }   
 });

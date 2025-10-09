@@ -12,111 +12,136 @@
 
 namespace KDQuiz;
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 //
 // Ajax APIs
 //
 
-function kd_update_quiz_question_stats($question_id) {
-    $views = (int) get_post_meta($question_id, 'kd_stats_view_count', true);
-    $correct = (int) get_post_meta($question_id, 'kd_stats_correct_count', true);
-    $wrong = (int) get_post_meta($question_id, 'kd_stats_wrong_count', true);
+function kdquiz_update_question_stats($question_id) {
+    // Keep the derived metrics in sync whenever an interaction counter moves.
+    $views = (int) get_post_meta($question_id, 'kdquiz_stats_view_count', true);
+    $views = max(0, $views);
 
-    $engagement = ($views > 0) ? ($correct + $wrong) / $views : 0;
-    $averageScore = ($correct + $wrong > 0) ? $correct / ($correct + $wrong) : 0;
+    $correct = (int) get_post_meta($question_id, 'kdquiz_stats_correct_count', true);
+    $correct = max(0, $correct);
 
-    update_post_meta($question_id, 'kd_stats_engagement', $engagement);
-    update_post_meta($question_id, 'kd_stats_average_score', $averageScore);
+    $wrong = (int) get_post_meta($question_id, 'kdquiz_stats_wrong_count', true);
+    $wrong = max(0, $wrong);
+
+    $engagement    = ($views > 0) ? ($correct + $wrong) / $views : 0;
+    $average_score = ($correct + $wrong > 0) ? $correct / ($correct + $wrong) : 0;
+
+    update_post_meta($question_id, 'kdquiz_stats_engagement', $engagement);
+    update_post_meta($question_id, 'kdquiz_stats_average_score', $average_score);
 }
 
-add_action('wp_ajax_kd_fetch_random_questions', 'KDQuiz\kd_fetch_random_questions');
-add_action('wp_ajax_nopriv_kd_fetch_random_questions', 'KDQuiz\kd_fetch_random_questions'); // For non-logged-in users
+add_action('wp_ajax_kd_fetch_random_questions', __NAMESPACE__ . '\\kdquiz_fetch_random_questions');
+add_action('wp_ajax_nopriv_kd_fetch_random_questions', __NAMESPACE__ . '\\kdquiz_fetch_random_questions');
 
-function kd_fetch_random_questions() {
-    check_ajax_referer('kd_quiz_ajax_nonce', 'nonce');
+function kdquiz_fetch_random_questions() {
+    check_ajax_referer('kdquiz_ajax_nonce', 'nonce');
 
-    $number_of_questions = isset($_POST['number']) ? intval($_POST['number']) : 5; // Default to 5 questions
-    $viewed_questions = isset($_POST['viewed_questions']) ? json_decode(stripslashes($_POST['viewed_questions']), true) : array();
+    // Enforce sane bounds before the query fires.
+    $number_of_questions = isset($_POST['number']) ? absint(wp_unslash($_POST['number'])) : 5;
+    $number_of_questions = $number_of_questions > 0 ? $number_of_questions : 5;
 
-    // Sanitize the viewed_questions array to ensure it contains valid integers
-    $viewed_questions = array_filter($viewed_questions, 'is_numeric');
-    $viewed_questions = array_map('intval', $viewed_questions);
+    $viewed_param = isset($_POST['viewed_questions']) ? wp_unslash($_POST['viewed_questions']) : '';
+    $viewed_questions = [];
+    if (is_string($viewed_param) && '' !== trim($viewed_param)) {
+        $decoded = json_decode($viewed_param, true);
+        if (is_array($decoded)) {
+            $viewed_questions = array_map('absint', array_filter($decoded, 'is_numeric'));
+        }
+    }
 
-    $args = array(
-        'post_type' => 'kd_quiz_question',
-        'post__not_in' => $viewed_questions, // Exclude viewed questions
+    $args = [
+        'post_type'      => 'kd_quiz_question',
+        'post__not_in'   => $viewed_questions,
         'posts_per_page' => $number_of_questions,
-        'orderby' => 'rand'
-    );
+        'orderby'        => 'rand',
+    ];
 
     $questions = get_posts($args);
 
-    // Fallback: If not enough questions, get more without excluding
     if (count($questions) < $number_of_questions) {
-        $additional_args = array(
-            'post_type' => 'kd_quiz_question',
+        $additional_questions = get_posts([
+            'post_type'      => 'kd_quiz_question',
             'posts_per_page' => $number_of_questions - count($questions),
-            'orderby' => 'rand'
-        );
-        $additional_questions = get_posts($additional_args);
+            'orderby'        => 'rand',
+        ]);
+
         $questions = array_merge($questions, $additional_questions);
     }
 
-    $data = array_map(function($post) {
-        // Format the data as needed
-
+    $data = array_map(function ($post) {
+        // Mirror the shape expected by the front-end app.
         $answers = [];
         for ($i = 0; $i < 4; $i++) {
-            $answers[] = array('optionId' => 'option_id_' . $i, 'optionText' => get_post_meta($post->ID, 'kd_answer_' . $i, true) );
+            $answer_text = get_post_meta($post->ID, 'kdquiz_answer_' . $i, true);
+            $answers[] = [
+                'optionId'   => 'option_id_' . $i,
+                'optionText' => wp_kses_post($answer_text),
+            ];
         }
 
-        return array(
-            'questionId' => $post->ID,
-            'questionText' => $post->post_title,
-            'options' => $answers,
-            'correctOptionId' => 'option_id_' . get_post_meta($post->ID, 'kd_correct_answer', true),
-            'explanation' => get_post_meta($post->ID, 'kd_explanation', true),
-        );
+        $correct_answer = get_post_meta($post->ID, 'kdquiz_correct_answer', true);
+        $explanation    = get_post_meta($post->ID, 'kdquiz_explanation', true);
+
+        return [
+            'questionId'      => (int) $post->ID,
+            'questionText'    => sanitize_text_field($post->post_title),
+            'options'         => $answers,
+            'correctOptionId' => 'option_id_' . absint($correct_answer),
+            'explanation'     => wp_kses_post($explanation),
+        ];
     }, $questions);
 
     wp_send_json_success($data);
 }
 
-add_action('wp_ajax_kd_increment_view_count', 'KDQuiz\kd_increment_view_count');
-add_action('wp_ajax_nopriv_kd_increment_view_count', 'KDQuiz\kd_increment_view_count'); // For non-logged-in users
+add_action('wp_ajax_kd_increment_view_count', __NAMESPACE__ . '\\kdquiz_increment_view_count');
+add_action('wp_ajax_nopriv_kd_increment_view_count', __NAMESPACE__ . '\\kdquiz_increment_view_count');
 
-function kd_increment_view_count() {
-    check_ajax_referer('kd_quiz_ajax_nonce', 'nonce');
+function kdquiz_increment_view_count() {
+    check_ajax_referer('kdquiz_ajax_nonce', 'nonce');
 
-    $question_id = isset($_POST['question_id']) ? intval($_POST['question_id']) : 0;
-
+    $question_id = isset($_POST['question_id']) ? absint(wp_unslash($_POST['question_id'])) : 0;
     if ($question_id && get_post_type($question_id) === 'kd_quiz_question') {
-        $views = (int) get_post_meta($question_id, 'kd_stats_view_count', true);
-        update_post_meta($question_id, 'kd_stats_view_count', $views + 1);
-        kd_update_quiz_question_stats($question_id);
+        // Views only ever increment; defensively guard against negative values.
+        $views = (int) get_post_meta($question_id, 'kdquiz_stats_view_count', true);
+        $views = max(0, $views);
+        update_post_meta($question_id, 'kdquiz_stats_view_count', $views + 1);
+        kdquiz_update_question_stats($question_id);
     }
 
     wp_send_json_success();
 }
 
-add_action('wp_ajax_kd_record_answer', 'KDQuiz\kd_record_answer');
-add_action('wp_ajax_nopriv_kd_record_answer', 'KDQuiz\kd_record_answer'); // For non-logged-in users
+add_action('wp_ajax_kd_record_answer', __NAMESPACE__ . '\\kdquiz_record_answer');
+add_action('wp_ajax_nopriv_kd_record_answer', __NAMESPACE__ . '\\kdquiz_record_answer');
 
-function kd_record_answer() {
-    check_ajax_referer('kd_quiz_ajax_nonce', 'nonce');
+function kdquiz_record_answer() {
+    check_ajax_referer('kdquiz_ajax_nonce', 'nonce');
 
-    $question_id = isset($_POST['question_id']) ? intval($_POST['question_id']) : 0;
-    $is_correct = isset($_POST['is_correct']) ? filter_var($_POST['is_correct'], FILTER_VALIDATE_BOOLEAN) : false;
+    $question_id = isset($_POST['question_id']) ? absint(wp_unslash($_POST['question_id'])) : 0;
+    $is_correct  = isset($_POST['is_correct']) ? rest_sanitize_boolean(wp_unslash($_POST['is_correct'])) : false;
 
     if ($question_id && get_post_type($question_id) === 'kd_quiz_question') {
         if ($is_correct) {
-            $correct = (int) get_post_meta($question_id, 'kd_stats_correct_count', true);
-            update_post_meta($question_id, 'kd_stats_correct_count', $correct + 1);
-            kd_update_quiz_question_stats($question_id);
+            // Increment the correct tally and warm the derived stats cache.
+            $correct = (int) get_post_meta($question_id, 'kdquiz_stats_correct_count', true);
+            $correct = max(0, $correct);
+            update_post_meta($question_id, 'kdquiz_stats_correct_count', $correct + 1);
         } else {
-            $wrong = (int) get_post_meta($question_id, 'kd_stats_wrong_count', true);
-            update_post_meta($question_id, 'kd_stats_wrong_count', $wrong + 1);
-            kd_update_quiz_question_stats($question_id);
+            $wrong = (int) get_post_meta($question_id, 'kdquiz_stats_wrong_count', true);
+            $wrong = max(0, $wrong);
+            update_post_meta($question_id, 'kdquiz_stats_wrong_count', $wrong + 1);
         }
+
+        kdquiz_update_question_stats($question_id);
     }
 
     wp_send_json_success();

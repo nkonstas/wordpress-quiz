@@ -12,131 +12,168 @@
 
 namespace KDQuiz;
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 //
 // Import
 //
 
-function kd_import_quiz_questions_page() {
-    // HTML form for pasting JSON
+function kdquiz_import_questions_page() {
     ?>
-    <div class="wrap"><h1>Import Quiz Questions</h1>
-    <p>Here, you can easily bulk import multiple quiz questions into your system using a structured JSON format. Please follow the guidelines below to ensure your data is correctly formatted and imported:</p>
-    <ul>
-        <li><strong>JSON Format:</strong> Your data should be in a JSON array format. Each quiz question is an object within this array.</li>
-        <li><strong>Question Text:</strong> Include the question text in the <code>"questionText"</code> field.</li>
-        <li><strong>Options:</strong> Provide up to four answer options as an array under the <code>"options"</code> field. Each option should have an <code>"optionId"</code> (like <code>"a1"</code>, <code>"a2"</code>, etc.) and <code>"optionText"</code> (the answer text).</li>
-        <li><strong>Correct Option:</strong> Specify the ID of the correct answer in the <code>"correctOptionId"</code> field.</li>
-        <li><strong>Explanation:</strong> Always include an explanation for the answer in the <code>"explanation"</code> field. This is useful for providing feedback to quiz takers.</li>
-    </ul>
-
-    Here's an example JSON:
-
-    <small><pre>
-[
-{
-    &quot;questionText&quot;: &quot;&lt;some question&gt;?&quot;,
-    &quot;options&quot;: [
-    { &quot;optionId&quot;: &quot;&lt;option id&gt;&quot;, &quot;optionText&quot;: &quot;&lt;answer 1&gt;&quot; },
-    { &quot;optionId&quot;: &quot;&lt;option id&gt;&quot;, &quot;optionText&quot;: &quot;&lt;answer 2&gt;&quot; },
-    { &quot;optionId&quot;: &quot;&lt;option id&gt;&quot;, &quot;optionText&quot;: &quot;&lt;answer 3&gt;&quot; },
-    { &quot;optionId&quot;: &quot;&lt;option id&gt;&quot;, &quot;optionText&quot;: &quot;&lt;answer 4&gt;&quot; }
-    ],
-    &quot;correctOptionId&quot;: &quot;&lt;an option id&gt;&quot;,
-    &quot;explanation&quot;: &quot;&lt;some explanation&gt;&quot;
-},
-{
-    &quot;questionText&quot;: &quot;&lt;some question&gt;?&quot;,
-    &quot;options&quot;: [
-    { &quot;optionId&quot;: &quot;&lt;option id&gt;&quot;, &quot;optionText&quot;: &quot;&lt;answer 1&gt;&quot; },
-    { &quot;optionId&quot;: &quot;&lt;option id&gt;&quot;, &quot;optionText&quot;: &quot;&lt;answer 2&gt;&quot; },
-    { &quot;optionId&quot;: &quot;&lt;option id&gt;&quot;, &quot;optionText&quot;: &quot;&lt;answer 3&gt;&quot; },
-    { &quot;optionId&quot;: &quot;&lt;option id&gt;&quot;, &quot;optionText&quot;: &quot;&lt;answer 4&gt;&quot; }
-    ],
-    &quot;correctOptionId&quot;: &quot;&lt;an option id&gt;&quot;,
-    &quot;explanation&quot;: &quot;&lt;some explanation&gt;&quot;
-}  
-]
-    </pre></small>
-
-    <form action="" method="post">
-    <textarea name="kd_quiz_questions_json" rows="10" cols="50" class="large-text"></textarea>
-    <input type="submit" value="Import Questions" class="button button-primary">
-    </form></div>
+    <div class="wrap">
+        <h1><?php esc_html_e('Import Quiz Questions', 'kd-quiz'); ?></h1>
+        <p><?php esc_html_e('Bulk import multiple quiz questions using a structured JSON array. Each entry must include the question text, up to four answer options, the correct option id, and an explanation.', 'kd-quiz'); ?></p>
+        <form action="" method="post">
+            <?php wp_nonce_field('kdquiz_import_questions_action', 'kdquiz_import_questions_nonce'); ?>
+            <textarea name="kdquiz_questions_json" rows="10" cols="50" class="large-text" placeholder='[ {"questionText":"..."} ]'></textarea>
+            <p>
+                <input type="submit" value="<?php esc_attr_e('Import Questions', 'kd-quiz'); ?>" class="button button-primary">
+            </p>
+        </form>
+    </div>
     <?php
 }
 
 add_action('admin_init', function () {
-    if (isset($_POST['kd_quiz_questions_json'])) {
-        $questions_json = stripslashes($_POST['kd_quiz_questions_json']);
-        $questions = json_decode($questions_json, true);
+    if (!isset($_POST['kdquiz_questions_json'])) {
+        return;
+    }
 
-        if ($questions) {
+    // Treat the import endpoint like a mini API – nonce + capability required.
+    if (!isset($_POST['kdquiz_import_questions_nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['kdquiz_import_questions_nonce'])), 'kdquiz_import_questions_action')) {
+        wp_die(esc_html__('Security check failed. Please try again.', 'kd-quiz'));
+    }
 
-            $count_added = 0;
-            $count_ignored = 0;
-            foreach ($questions as $question) {
-                if (!kd_question_exists($question['questionText'])) {
-                    kd_create_quiz_question($question);
-                    $count_added++;
-                } else {
-                    $count_ignored++;
-                }
-            }
-               
-            // Redirect to the quiz question list with count
-            $redirect_url = add_query_arg(array(
-                'post_type' => 'kd_quiz_question', // Your CPT slug
-                'imported' => $count_added,
-                'duplicates' => $count_ignored
-            ), admin_url('edit.php'));
+    if (!current_user_can('manage_options')) {
+        wp_die(esc_html__('You do not have sufficient permissions to import questions.', 'kd-quiz'));
+    }
 
-            wp_redirect($redirect_url);
-            exit;
+    $questions_json = wp_unslash($_POST['kdquiz_questions_json']);
+    $questions      = json_decode($questions_json, true);
+
+    if (!is_array($questions)) {
+        add_action('admin_notices', function () {
+            echo '<div class="notice notice-error is-dismissible"><p>' . esc_html__('Invalid JSON payload. Please review your input.', 'kd-quiz') . '</p></div>';
+        });
+        return;
+    }
+
+    $count_added   = 0;
+    $count_ignored = 0;
+
+    foreach ($questions as $question) {
+        if (!kdquiz_is_valid_question_payload($question)) {
+            $count_ignored++;
+            continue;
+        }
+
+        $question_text = sanitize_text_field($question['questionText']);
+        if (!kdquiz_question_exists($question_text)) {
+            // First time we see this question, store it.
+            kdquiz_create_question($question);
+            $count_added++;
+        } else {
+            $count_ignored++;
         }
     }
+
+    $redirect_url = add_query_arg(
+        [
+            'post_type'  => 'kd_quiz_question',
+            'imported'   => $count_added,
+            'duplicates' => $count_ignored,
+        ],
+        admin_url('edit.php')
+    );
+
+    wp_redirect($redirect_url);
+    exit;
 });
 
 add_action('admin_notices', function () {
-    if (isset($_GET['imported']) && is_numeric($_GET['imported'])) {
-        $count = intval($_GET['imported']);
-        $duplicates = intval($_GET['duplicates']);
-        echo '<div class="notice notice-success is-dismissible"><p>';
-        echo sprintf(esc_html__('%s questions have been successfully imported, %s duplicates ignored.', 'text-domain'), $count, $duplicates);
-        echo '</p></div>';
+    if (!isset($_GET['imported'], $_GET['duplicates'])) {
+        return;
     }
+
+    $count      = absint($_GET['imported']);
+    $duplicates = absint($_GET['duplicates']);
+
+    if (0 === $count && 0 === $duplicates) {
+        return;
+    }
+
+    printf(
+        '<div class="notice notice-success is-dismissible"><p>%s</p></div>',
+        sprintf(
+            esc_html__('%1$s questions imported, %2$s duplicates ignored.', 'kd-quiz'),
+            esc_html(number_format_i18n($count)),
+            esc_html(number_format_i18n($duplicates))
+        )
+    );
 });
 
-function kd_question_exists($question_text) {
-    global $wpdb;
-    $post_title = wp_strip_all_tags($question_text);
-    $query = "SELECT ID FROM $wpdb->posts WHERE post_title = %s AND post_type = 'kd_quiz_question' AND post_status = 'publish'";
-    return $wpdb->get_var($wpdb->prepare($query, $post_title));
+function kdquiz_is_valid_question_payload($question) {
+    if (!is_array($question)) {
+        return false;
+    }
+
+    $required_keys = ['questionText', 'options', 'correctOptionId', 'explanation'];
+    foreach ($required_keys as $key) {
+        if (!array_key_exists($key, $question)) {
+            return false;
+        }
+    }
+
+    if (!is_array($question['options']) || empty($question['options'])) {
+        return false;
+    }
+
+    return true;
 }
 
-function kd_create_quiz_question($question) {
-    // Create a new quiz question post
-    $post_id = wp_insert_post(array(
-        'post_title'   => wp_strip_all_tags($question['questionText']),
-        'post_content' => '', // Optional content
-        'post_status'  => 'publish',
-        'post_type'    => 'kd_quiz_question',
-    ));
+function kdquiz_question_exists($question_text) {
+    global $wpdb;
 
-    if ($post_id && !is_wp_error($post_id)) {
-        // Map optionId to a zero-based index
-        $option_index_map = array();
-        foreach ($question['options'] as $index => $option) {
-            $option_index_map[$option['optionId']] = $index;
-            add_post_meta($post_id, 'kd_answer_' . $index, $option['optionText']);
+    $post_title = wp_strip_all_tags($question_text);
+    // Using a raw query keeps things fast when people import hundreds of questions.
+    $query      = "SELECT ID FROM $wpdb->posts WHERE post_title = %s AND post_type = 'kd_quiz_question' AND post_status = 'publish'";
+
+    return (bool) $wpdb->get_var($wpdb->prepare($query, $post_title));
+}
+
+function kdquiz_create_question($question) {
+    $question_text = sanitize_text_field($question['questionText']);
+
+    $post_id = wp_insert_post(
+        [
+            'post_title'  => $question_text,
+            'post_status' => 'publish',
+            'post_type'   => 'kd_quiz_question',
+        ],
+        true
+    );
+
+    if (is_wp_error($post_id) || !$post_id) {
+        return;
+    }
+
+    $option_index_map = [];
+    foreach ($question['options'] as $index => $option) {
+        if (!isset($option['optionId'], $option['optionText'])) {
+            continue;
         }
 
-        // Add correct answer index (zero-based)
-        $correct_answer_index = isset($option_index_map[$question['correctOptionId']]) ? $option_index_map[$question['correctOptionId']] : null;
-        if ($correct_answer_index !== null) {
-            add_post_meta($post_id, 'kd_correct_answer', $correct_answer_index);
-        }
+        $option_index_map[$option['optionId']] = $index;
+        update_post_meta($post_id, 'kdquiz_answer_' . $index, sanitize_text_field($option['optionText']));
+    }
 
-        // Add explanation
-        add_post_meta($post_id, 'kd_explanation', $question['explanation']);
+    if (isset($option_index_map[$question['correctOptionId']])) {
+        update_post_meta($post_id, 'kdquiz_correct_answer', absint($option_index_map[$question['correctOptionId']]));
+    }
+
+    if (isset($question['explanation'])) {
+        update_post_meta($post_id, 'kdquiz_explanation', wp_kses_post($question['explanation']));
     }
 }

@@ -1,0 +1,4 @@
+{
+    "MinifyAll.PrefixOfNewMinifiedFiles": ".min",
+    "MinifyAll.openMinifiedDocument": false
+}

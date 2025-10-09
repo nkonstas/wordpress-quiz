@@ -12,65 +12,66 @@
 
 namespace KDQuiz;
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 //
-// Frontend
+// Frontend bootstrap
 //
 
 add_shortcode('kd-quiz', function () {
-    global $kd_quiz_used;
+    global $kdquiz_shortcode_used;
 
-    // Check if the shortcode has already been used on the page
-    if ($kd_quiz_used) {
-        return ''; // Return empty string if already used
+    // We only ever want one quiz instance per request.
+    if ($kdquiz_shortcode_used) {
+        return '';
     }
 
-    $kd_quiz_used = true; // Mark as used
+    $kdquiz_shortcode_used = true;
 
-    // Your quiz content generation logic goes here
-    $quiz_content = '<div id="kd-quiz-container"></div>';
-
-    return $quiz_content;
+    return '<div id="kd-quiz-container"></div>';
 });
 
-add_action( 'wp_enqueue_scripts', function () {
-    // Define the paths to the script and stylesheet relative to the plugin directory
+add_action('wp_enqueue_scripts', function () {
+    // Version assets on mtime so browsers pick up fresh bundles after releases.
     $script_path = '../assets/kd-quiz.min.js';
-    $style_path = '../assets/kd-quiz.min.css';
+    $style_path  = '../assets/kd-quiz.min.css';
 
-    // Get the full paths of the script and stylesheet on the server
-    $script_full_path = plugin_dir_path( __FILE__ ) . $script_path;
-    $style_full_path = plugin_dir_path( __FILE__ ) . $style_path;
+    $script_full_path = plugin_dir_path(__FILE__) . $script_path;
+    $style_full_path  = plugin_dir_path(__FILE__) . $style_path;
 
-    // Use filemtime() to get the last modified time of the files
-    $script_version = filemtime( $script_full_path );
-    $style_version = filemtime( $style_full_path );
+    $script_version = file_exists($script_full_path) ? (string) filemtime($script_full_path) : false;
+    $style_version  = file_exists($style_full_path) ? (string) filemtime($style_full_path) : false;
 
-    // Get the correct URLs to the script and stylesheet
-    $script_url = plugins_url( $script_path, __FILE__ );
-    $style_url = plugins_url( $style_path, __FILE__ );
+    $script_url = plugins_url($script_path, __FILE__);
+    $style_url  = plugins_url($style_path, __FILE__);
 
-    // Enqueue the script and stylesheet with their file timestamps as versions
-    wp_enqueue_style( 'kd-quiz-style', $style_url, array(), $style_version );
-    wp_enqueue_script( 'kd-quiz-script', $script_url, array(), $script_version );
+    wp_enqueue_style('kdquiz-style', $style_url, [], $style_version ?: null);
+    wp_enqueue_script('kdquiz-script', $script_url, [], $script_version ?: null, true);
 
-    $replacements = array(
-        'ajax_url' => admin_url('admin-ajax.php'),
-        'nonce'    => wp_create_nonce('kd_quiz_ajax_nonce'),
-        'element_selector' => '#kd-quiz-container',
-        'questions' => get_option('kd_quiz_number_questions', '5'),
-        'style' => get_option('kd_quiz_card_style', 'kd_quiz_style_1'),
-        'auto_insert_enabled' => get_option('kd_quiz_enable_auto_insert'),
-        'heading_selector' => get_option('kd_quiz_heading_selector'),
-        'heading_match' => get_option('kd_quiz_heading_match'),
-        'min_distance' => get_option('kd_quiz_min_distance'),
-    );
+    $questions = absint(get_option('kdquiz_number_questions', 5));
+    $min_distance = absint(get_option('kdquiz_min_distance', 0));
 
+    $replacements = [
+        'ajax_url'            => admin_url('admin-ajax.php'),
+        'nonce'               => wp_create_nonce('kdquiz_ajax_nonce'),
+        'element_selector'    => '#kd-quiz-container',
+        'questions'           => $questions > 0 ? $questions : 5,
+        'style'               => sanitize_key(get_option('kdquiz_card_style', 'kd_quiz_style_1')),
+        'auto_insert_enabled' => (int) get_option('kdquiz_enable_auto_insert', 0),
+        'heading_selector'    => sanitize_text_field(get_option('kdquiz_heading_selector', 'h2, h3')),
+        'heading_match'       => sanitize_text_field(get_option('kdquiz_heading_match', '')),
+        'min_distance'        => $min_distance >= 0 ? $min_distance : 0,
+    ];
+
+    // Pass through the strings so the JS bundle can localise UI text without extra requests.
     $strings = Shared::getInstance()->getStrings();
     foreach ($strings as $string) {
-        $text = get_option('kd_quiz_' . $string['id'], $string['default_value']);
-        $replacements[$string['id'] . '_raw'] = $text;
-        $replacements[$string['id']] = esc_html($text);
+        $text = get_option($string['option_name'], $string['default_value']);
+        $replacements[$string['key'] . '_raw'] = $text;
+        $replacements[$string['key']] = wp_kses_post($text);
     }
 
-    wp_localize_script('kd-quiz-script', 'kdQuizAjax', $replacements);
+    wp_localize_script('kdquiz-script', 'kdQuizAjax', $replacements);
 });

@@ -12,6 +12,10 @@
 
 namespace KDQuiz;
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 //
 // Shared data
 //
@@ -21,74 +25,89 @@ class Shared {
     private $strings;
 
     private function __construct() {
+        // Central place to keep the text override definitions in sync.
         $this->strings = [
             [
-                'id' => 'text_wrong_answer',
+                'key' => 'text_wrong_answer',
+                'option_name' => 'kdquiz_text_wrong_answer',
                 'description' => 'Wrong Answer',
                 'default_value' => 'Sorry, wrong answer.'
             ],
             [
-                'id' => 'text_correct_answer',
+                'key' => 'text_correct_answer',
+                'option_name' => 'kdquiz_text_correct_answer',
                 'description' => 'Correct Answer',
                 'default_value' => 'Correct Answer!'
             ],
             [
-                'id' => 'text_next_question',
+                'key' => 'text_next_question',
+                'option_name' => 'kdquiz_text_next_question',
                 'description' => 'Next Question',
                 'default_value' => 'Next Question'
             ],
             [
-                'id' => 'text_next_view_score',
+                'key' => 'text_next_view_score',
+                'option_name' => 'kdquiz_text_next_view_score',
                 'description' => 'View Score',
                 'default_value' => 'View Your Score'
             ],
             [
-                'id' => 'kd_quiz_text_score_grade',
+                'key' => 'kd_quiz_text_score_grade',
+                'option_name' => 'kdquiz_text_score_grade',
                 'description' => 'Score Grade',
                 'default_value' => 'Grade'
             ],
             [
-                'id' => 'kd_quiz_text_score_grade_a',
+                'key' => 'kd_quiz_text_score_grade_a',
+                'option_name' => 'kdquiz_text_score_grade_a',
                 'description' => 'Grade A',
                 'default_value' => 'A'
             ],
             [
-                'id' => 'kd_quiz_text_score_grade_b',
+                'key' => 'kd_quiz_text_score_grade_b',
+                'option_name' => 'kdquiz_text_score_grade_b',
                 'description' => 'Grade B',
                 'default_value' => 'B'
             ],
             [
-                'id' => 'kd_quiz_text_score_grade_c',
+                'key' => 'kd_quiz_text_score_grade_c',
+                'option_name' => 'kdquiz_text_score_grade_c',
                 'description' => 'Grade C',
                 'default_value' => 'C'
             ],
             [
-                'id' => 'kd_quiz_text_score_grade_f',
+                'key' => 'kd_quiz_text_score_grade_f',
+                'option_name' => 'kdquiz_text_score_grade_f',
                 'description' => 'Grade F',
                 'default_value' => 'F'
             ],
             [
-                'id' => 'kd_quiz_text_score_percentage',
+                'key' => 'kd_quiz_text_score_percentage',
+                'option_name' => 'kdquiz_text_score_percentage',
                 'description' => 'Score Percentage',
                 'default_value' => 'Your Score'
             ],
             [
-                'id' => 'kd_quiz_text_score_grade_a_message',
+                'key' => 'kd_quiz_text_score_grade_a_message',
+                'option_name' => 'kdquiz_text_score_grade_a_message',
                 'description' => 'Grade A Message',
                 'default_value' => 'Excellent work! You have a strong understanding of the material.'
             ],
             [
-                'id' => 'kd_quiz_text_score_grade_b_message',
+                'key' => 'kd_quiz_text_score_grade_b_message',
+                'option_name' => 'kdquiz_text_score_grade_b_message',
                 'description' => 'Grade B Message',
                 'default_value' => 'Good job! You\'ve grasped most of the concepts well.'
             ],
             [
-                'id' => 'kd_quiz_text_score_grade_c_message',
+                'key' => 'kd_quiz_text_score_grade_c_message',
+                'option_name' => 'kdquiz_text_score_grade_c_message',
                 'description' => 'Grade C Message',
                 'default_value' => 'Not bad, but there\'s room for improvement. Keep learning!'
             ],
             [
-                'id' => 'kd_quiz_text_score_grade_f_message',
+                'key' => 'kd_quiz_text_score_grade_f_message',
+                'option_name' => 'kdquiz_text_score_grade_f_message',
                 'description' => 'Grade F Message',
                 'default_value' => 'Looks like you need a bit more practice. Don\'t give up!'
             ],
