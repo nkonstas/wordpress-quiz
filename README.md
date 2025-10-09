@@ -5,7 +5,7 @@ KDQuiz is a simple WordPress plugin designed to enhance user engagement through 
 
 ## Demo
 
-You can find a demo of the plug in this [winter salad recipe](https://ketodiet.com/winter-salad-with-roast-pumpkin-feta-and-cranberries/#kd-quiz-container) where the user is presented with questions relevant to low carb cooking which is that the website is about. This is key to using this plug in, the questions you create have to be relevant to your content to maximise engagement.
+You can find a demo of the plugin in this [winter salad recipe](https://ketodiet.com/winter-salad-with-roast-pumpkin-feta-and-cranberries/#kd-quiz-container) where the user is presented with questions relevant to low‑carb cooking. This is key to using this plugin: the questions you create should be relevant to your content to maximise engagement.
 
 ## Features
 - **Customizable Quizzes**: Create your own questions and tailor the quiz to match your website's content and style.
@@ -19,7 +19,7 @@ The primary goal of KDQuiz is to increase user interaction and engagement on you
 ## Installation and Usage
 1. **Installation**: Download the plugin and install it on your WordPress site.
 2. **Creating Quizzes**: Access the quiz creation interface from the WordPress dashboard > Quiz Questions.
-3. **Shortcode Usage**: Insert `[kd-quiz]` shortcode anywhere in your post or page to display the quiz. *Please note that currenty a page or post can only have one quiz*.
+3. **Shortcode Usage**: Insert `[kd-quiz]` shortcode anywhere in your post or page to display the quiz. The shortcode renders `<div id="kd-quiz-container"></div>`, which the script upgrades into the quiz card. *Please note that currently a page or post can only have one quiz*.
 4. **Setting Auto-Insertion Rules**: Configure rules for automatic quiz insertion in pages without the shortcode. This is an optional step, if you prefer precise positioning control use the shortcode above.
 
 ## Quick Guide
@@ -58,7 +58,12 @@ The primary goal of KDQuiz is to increase user interaction and engagement on you
 Contributions to KDQuiz are welcome! Feel free to fork the repository, make your changes, and submit pull requests.
 
 ## Styling
-The plugin comes with four predefined styles: vibrant, light, dark, and custom. When the custom style is selected, the container class for the quiz has the class `kd_quiz_style_custom`. This allows for extensive customization using CSS to style virtually every aspect of the quiz card.
+The plugin offers three presets plus a Custom option. The root element uses `kd-quiz-card` and a style class:
+- `kd_quiz_style_1` (Vibrant Look)
+- `kd_quiz_style_2` (Light Look)
+- `kd_quiz_style_3` (Dark Look)
+- `kd_quiz_style_custom` (Custom — add your own CSS)
+Target `kd_quiz_style_custom` in your theme or custom CSS for bespoke theming.
 
 
 ### HTML And CSS Classes 
@@ -84,7 +89,7 @@ The HTML structure for the quiz questions and answers is outlined below. To cust
 	     <p class="kd-incorrect">
                <span class="kd-answer-icon"></span>Sorry, wrong answer.
              </p>
-	     <p class="kd-answer">Some explation.</p>
+        <p class="kd-answer">Some explanation.</p>
 	     <button class="kd-action">Next Question</button>
 	   </div>
     </div>

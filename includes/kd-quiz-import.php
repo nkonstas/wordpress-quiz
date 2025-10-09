@@ -50,7 +50,7 @@ add_action('admin_init', function () {
         wp_die(esc_html__('You do not have sufficient permissions to import questions.', 'kd-quiz'));
     }
 
-    $questions_json = wp_unslash($_POST['kdquiz_questions_json']);
+    $questions_json = sanitize_textarea_field(wp_unslash($_POST['kdquiz_questions_json']));
     $questions      = json_decode($questions_json, true);
 
     if (!is_array($questions)) {
@@ -84,6 +84,7 @@ add_action('admin_init', function () {
             'post_type'  => 'kd_quiz_question',
             'imported'   => $count_added,
             'duplicates' => $count_ignored,
+            'kdquiz_import_notice' => wp_create_nonce('kdquiz_import_notice'),
         ],
         admin_url('edit.php')
     );
@@ -93,7 +94,12 @@ add_action('admin_init', function () {
 });
 
 add_action('admin_notices', function () {
-    if (!isset($_GET['imported'], $_GET['duplicates'])) {
+    if (!isset($_GET['imported'], $_GET['duplicates'], $_GET['kdquiz_import_notice'])) {
+        return;
+    }
+
+    $nonce = sanitize_text_field(wp_unslash($_GET['kdquiz_import_notice']));
+    if (!wp_verify_nonce($nonce, 'kdquiz_import_notice')) {
         return;
     }
 
@@ -104,13 +110,16 @@ add_action('admin_notices', function () {
         return;
     }
 
+    /* translators: 1: number of imported questions, 2: number of duplicates ignored. */
+    $kdquiz_import_tpl = __('%1$s questions imported, %2$s duplicates ignored.', 'kd-quiz');
+    $kdquiz_import_msg = sprintf(
+        $kdquiz_import_tpl,
+        number_format_i18n($count),
+        number_format_i18n($duplicates)
+    );
     printf(
         '<div class="notice notice-success is-dismissible"><p>%s</p></div>',
-        sprintf(
-            esc_html__('%1$s questions imported, %2$s duplicates ignored.', 'kd-quiz'),
-            esc_html(number_format_i18n($count)),
-            esc_html(number_format_i18n($duplicates))
-        )
+        esc_html($kdquiz_import_msg)
     );
 });
 
@@ -134,13 +143,27 @@ function kdquiz_is_valid_question_payload($question) {
 }
 
 function kdquiz_question_exists($question_text) {
-    global $wpdb;
-
     $post_title = wp_strip_all_tags($question_text);
-    // Using a raw query keeps things fast when people import hundreds of questions.
-    $query      = "SELECT ID FROM $wpdb->posts WHERE post_title = %s AND post_type = 'kd_quiz_question' AND post_status = 'publish'";
 
-    return (bool) $wpdb->get_var($wpdb->prepare($query, $post_title));
+    $query = new \WP_Query([
+        'post_type'      => 'kd_quiz_question',
+        'post_status'    => 'publish',
+        'posts_per_page' => 10,
+        'fields'         => 'ids',
+        's'              => $post_title,
+    ]);
+
+    if (empty($query->posts)) {
+        return false;
+    }
+
+    foreach ($query->posts as $post_id) {
+        if (get_the_title($post_id) === $post_title) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 function kdquiz_create_question($question) {

@@ -75,20 +75,13 @@ add_action('init', function () {
 });
 
 add_action('admin_enqueue_scripts', function () {
-    // Version CSS/JS in the admin so editors see their updates instantly.
-    $script_path = '../assets/kd-admin-quiz.min.js';
-    $style_path  = '../assets/kd-admin-quiz.min.css';
+    // Enqueue only the admin CSS; there is no admin JS at present.
+    $style_path = '../assets/kd-admin-quiz.min.css';
 
-    $script_full_path = plugin_dir_path(__FILE__) . $script_path;
-    $style_full_path  = plugin_dir_path(__FILE__) . $style_path;
+    $style_full_path = plugin_dir_path(__FILE__) . $style_path;
+    $style_version   = file_exists($style_full_path) ? (string) filemtime($style_full_path) : false;
+    $style_url       = plugins_url($style_path, __FILE__);
 
-    $script_version = file_exists($script_full_path) ? (string) filemtime($script_full_path) : false;
-    $style_version  = file_exists($style_full_path) ? (string) filemtime($style_full_path) : false;
-
-    $script_url = plugins_url($script_path, __FILE__);
-    $style_url  = plugins_url($style_path, __FILE__);
-
-    wp_enqueue_script('kdquiz-admin-quiz-script', $script_url, [], $script_version ?: null, true);
     wp_enqueue_style('kdquiz-admin-quiz-style', $style_url, [], $style_version ?: null);
 });
 
@@ -129,6 +122,7 @@ function kdquiz_display_meta_box($post) {
 
     for ($i = 0; $i < 4; $i++) {
         $answer_text = get_post_meta($post->ID, 'kdquiz_answer_' . $i, true);
+        // translators: %d is the answer number shown to editors (1–4).
         $label       = sprintf(__('Answer %d:', 'kd-quiz'), $i + 1);
 
         // Radio buttons let the editor pick the right answer inline.
@@ -136,7 +130,7 @@ function kdquiz_display_meta_box($post) {
         printf(
             '<input type="radio" name="%1$s" value="%2$d" %3$s /> ',
             esc_attr('kdquiz_correct_answer'),
-            $i,
+            esc_attr($i),
             checked((int) $correct_answer, $i, false)
         );
         printf(

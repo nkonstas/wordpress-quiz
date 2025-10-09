@@ -48,7 +48,7 @@ function kdquiz_fetch_random_questions() {
     $number_of_questions = isset($_POST['number']) ? absint(wp_unslash($_POST['number'])) : 5;
     $number_of_questions = $number_of_questions > 0 ? $number_of_questions : 5;
 
-    $viewed_param = isset($_POST['viewed_questions']) ? wp_unslash($_POST['viewed_questions']) : '';
+    $viewed_param = isset($_POST['viewed_questions']) ? sanitize_textarea_field(wp_unslash($_POST['viewed_questions'])) : '';
     $viewed_questions = [];
     if (is_string($viewed_param) && '' !== trim($viewed_param)) {
         $decoded = json_decode($viewed_param, true);
@@ -57,23 +57,55 @@ function kdquiz_fetch_random_questions() {
         }
     }
 
-    $args = [
+    // Avoid using post__not_in for performance (VIP guideline). Fetch a larger
+    // random batch and filter out viewed IDs in PHP.
+    $fetch_count = max($number_of_questions + count($viewed_questions), $number_of_questions * 2);
+    $fetch_count = min($fetch_count, 50);
+
+    $batch = get_posts([
         'post_type'      => 'kd_quiz_question',
-        'post__not_in'   => $viewed_questions,
-        'posts_per_page' => $number_of_questions,
+        'posts_per_page' => $fetch_count,
         'orderby'        => 'rand',
-    ];
+    ]);
 
-    $questions = get_posts($args);
+    $questions = [];
+    $seen_ids  = [];
+    foreach ($batch as $p) {
+        if (in_array($p->ID, $viewed_questions, true)) {
+            continue;
+        }
+        if (isset($seen_ids[$p->ID])) {
+            continue;
+        }
+        $questions[]      = $p;
+        $seen_ids[$p->ID] = true;
+        if (count($questions) >= $number_of_questions) {
+            break;
+        }
+    }
 
-    if (count($questions) < $number_of_questions) {
-        $additional_questions = get_posts([
+    // If still short, try a few more random pulls and continue filtering.
+    $tries = 0;
+    while (count($questions) < $number_of_questions && $tries < 3) {
+        $extra = get_posts([
             'post_type'      => 'kd_quiz_question',
-            'posts_per_page' => $number_of_questions - count($questions),
+            'posts_per_page' => ($number_of_questions - count($questions)) * 2,
             'orderby'        => 'rand',
         ]);
-
-        $questions = array_merge($questions, $additional_questions);
+        foreach ($extra as $p) {
+            if (in_array($p->ID, $viewed_questions, true)) {
+                continue;
+            }
+            if (isset($seen_ids[$p->ID])) {
+                continue;
+            }
+            $questions[]      = $p;
+            $seen_ids[$p->ID] = true;
+            if (count($questions) >= $number_of_questions) {
+                break 2;
+            }
+        }
+        $tries++;
     }
 
     $data = array_map(function ($post) {
@@ -127,7 +159,8 @@ function kdquiz_record_answer() {
     check_ajax_referer('kdquiz_ajax_nonce', 'nonce');
 
     $question_id = isset($_POST['question_id']) ? absint(wp_unslash($_POST['question_id'])) : 0;
-    $is_correct  = isset($_POST['is_correct']) ? rest_sanitize_boolean(wp_unslash($_POST['is_correct'])) : false;
+    $is_correct_raw = isset($_POST['is_correct']) ? sanitize_text_field(wp_unslash($_POST['is_correct'])) : '';
+    $is_correct  = function_exists('wp_validate_boolean') ? wp_validate_boolean($is_correct_raw) : rest_sanitize_boolean($is_correct_raw);
 
     if ($question_id && get_post_type($question_id) === 'kd_quiz_question') {
         if ($is_correct) {

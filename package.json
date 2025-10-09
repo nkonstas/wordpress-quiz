@@ -1,0 +1,17 @@
+{
+  "name": "wordpress-quiz",
+  "version": "1.0.0",
+  "description": "## Introduction KDQuiz is a simple WordPress plugin designed to enhance user engagement through interactive quizzes. It allows users to craft their own questions and precisely control the display of quizzes on their website, ensuring a non-intrusive yet engaging experience for visitors.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "sass assets/kd-quiz.scss assets/kd-quiz.min.css --style=compressed --source-map && sass assets/kd-admin-quiz.scss assets/kd-admin-quiz.min.css --style=compressed --source-map && terser assets/kd-quiz.js -c -m -o assets/kd-quiz.min.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "sass": "^1.93.2",
+    "terser": "^5.44.0"
+  }
+}

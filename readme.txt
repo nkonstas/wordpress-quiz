@@ -2,13 +2,13 @@
 Contributors: nkonstas
 Tags: quiz, education, engagement, shortcode, ajax
 Requires at least: 5.4
-Tested up to: 6.5
-Stable tag: 1.1.0
+Tested up to: 6.8
+Stable tag: 1.2.0
 Requires PHP: 7.2
 License: GPLv3 or later
 License URI: https://github.com/nkonstas/wordpress-quiz/blob/main/LICENSE
 
-Interactive Quiz lets you embed a lightweight, card-style quiz anywhere on your WordPress site to increase visitor engagement without intrusive popups.
+Embed a lightweight, card-style quiz with AJAX rotation and scoring to boost engagement anywhere on your site.
 
 == Description ==
 Interactive Quiz adds an admin-friendly custom post type for quiz questions, plus a front-end shortcode that renders an animated flash card interface. The plugin includes:
@@ -44,11 +44,18 @@ No. The plugin stores aggregate view and answer counts per question only.
 4. Front-end quiz card with score summary.
 
 == Changelog ==
+= 1.2.0 =
+* Addressed WordPress Plugin Checker feedback: added translators comments for placeholder strings, ensured proper escaping in admin UI, and sanitized/validated AJAX and form inputs with nonce checks.
+* Replaced direct SQL in import duplicate checks with core APIs; tightened import notice handling.
+* Removed error_log usage; added `kdquiz_include_failed` hook for observability.
+* Updated "Tested up to" to 6.8 and refreshed front-end metadata; minor copy polish in short description.
 = 1.1.0 =
 * Updated option, meta, and function prefixes to the `kdquiz_` namespace to avoid conflicts.
 * Hardened nonce checks, request sanitization, and output escaping across AJAX handlers and admin forms.
 * Refreshed readme to pass the WordPress.org validator and declared testing up to WordPress 6.5.
 
 == Upgrade Notice ==
+= 1.2.0 =
+Compatibility and security hardening release. Please update to ensure translator hints, escaping, nonce verification, and import checks match current WordPress guidelines.
 = 1.1.0 =
 Please clear any cached assets so the updated JavaScript receives the latest option keys and security improvements.

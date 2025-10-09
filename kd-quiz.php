@@ -11,7 +11,7 @@
  * Plugin Name:       Interactive Quiz
  * Plugin URI:        https://github.com/nkonstas/wordpress-quiz
  * Description:       Allows you to create a simple interactive quiz on any page or post
- * Version:           1.1.0
+ * Version:           1.2.0
  * Requires at least: 5.4
  * Requires PHP:      7.2
  * Author:            Nikos Konstas
@@ -33,9 +33,8 @@ if (!defined('WPINC')) {
  */
 function kdquiz_safe_include($file) {
     if (!@include_once($file)) {
-        // Handle the error, e.g., log it or notify the admin
-        // For example, writing to a log file or using error_log()
-        error_log("Failed to include: " . $file);
+        // Surface an action for observers (avoid hardcoded logging in production).
+        do_action('kdquiz_include_failed', $file);
     }
 }
 
