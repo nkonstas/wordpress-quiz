@@ -1,9 +1,9 @@
-=== Interactive Quiz ===
+=== KD Quiz – Interactive Quiz ===
 Contributors: nkonstas
 Tags: quiz, education, engagement, shortcode, ajax
 Requires at least: 5.4
 Tested up to: 6.8
-Stable tag: 1.2.0
+Stable tag: 1.2.2
 Requires PHP: 7.2
 License: GPLv3 or later
 License URI: https://github.com/nkonstas/wordpress-quiz/blob/main/LICENSE
@@ -11,7 +11,7 @@ License URI: https://github.com/nkonstas/wordpress-quiz/blob/main/LICENSE
 Embed a lightweight, card-style quiz with AJAX rotation and scoring to boost engagement anywhere on your site.
 
 == Description ==
-Interactive Quiz adds an admin-friendly custom post type for quiz questions, plus a front-end shortcode that renders an animated flash card interface. The plugin includes:
+KD Quiz adds an admin-friendly custom post type for quiz questions, plus a front-end shortcode that renders an animated flash card interface. The plugin includes:
 
 * Four default styles with a custom option for bespoke theming.
 * AJAX-powered question rotation, view tracking, and scoring without page reloads.
@@ -22,7 +22,7 @@ All user inputs are sanitized, escaped, and routed through WordPress nonces to p
 
 == Installation ==
 1. Upload the `kd-quiz` folder to `wp-content/plugins/` or install it via the WordPress dashboard.
-2. Activate **Interactive Quiz** through the **Plugins** menu.
+2. Activate **KD Quiz – Interactive Quiz** through the **Plugins** menu.
 3. Visit **Quiz Questions → Add New Question** to create your first question and mark the correct answer.
 4. Configure global behaviour under **Quiz Questions → Settings** (question count, styles, auto-insert rules, and text replacements).
 5. Place the `[kd-quiz]` shortcode in any post or page, or enable automatic insertion to let the plugin place quizzes after targeted headings.
@@ -44,6 +44,13 @@ No. The plugin stores aggregate view and answer counts per question only.
 4. Front-end quiz card with score summary.
 
 == Changelog ==
+= 1.2.2 =
+* Random fetch fallback to ensure a full question set even when all are marked viewed (keeps VIP-safe query semantics).
+* Packaging and i18n: include `/languages` in release; remove discouraged `load_plugin_textdomain()` call.
+
+= 1.2.1 =
+* Change plugin name to “KD Quiz – Interactive Quiz” to align with the desired WordPress.org slug `kd-quiz`.
+* Maintenance: rebuild minified assets and package script updates.
 = 1.2.0 =
 * Addressed WordPress Plugin Checker feedback: added translators comments for placeholder strings, ensured proper escaping in admin UI, and sanitized/validated AJAX and form inputs with nonce checks.
 * Replaced direct SQL in import duplicate checks with core APIs; tightened import notice handling.

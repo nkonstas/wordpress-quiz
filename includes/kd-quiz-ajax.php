@@ -108,6 +108,28 @@ function kdquiz_fetch_random_questions() {
         $tries++;
     }
 
+    // Final fallback: if the not-viewed pool is exhausted, fill the remainder
+    // with random questions (even if previously viewed) to ensure the UI has
+    // something to display, matching the prior behavior.
+    if (count($questions) < $number_of_questions) {
+        $needed = $number_of_questions - count($questions);
+        $filler = get_posts([
+            'post_type'      => 'kd_quiz_question',
+            'posts_per_page' => $needed * 2,
+            'orderby'        => 'rand',
+        ]);
+        foreach ($filler as $p) {
+            if (isset($seen_ids[$p->ID])) {
+                continue;
+            }
+            $questions[]      = $p;
+            $seen_ids[$p->ID] = true;
+            if (count($questions) >= $number_of_questions) {
+                break;
+            }
+        }
+    }
+
     $data = array_map(function ($post) {
         // Mirror the shape expected by the front-end app.
         $answers = [];
