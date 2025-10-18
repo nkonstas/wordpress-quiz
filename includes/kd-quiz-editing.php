@@ -81,15 +81,31 @@ function kdquiz_migrate_legacy_post_type() {
         return;
     }
 
-    global $wpdb;
-    $updated = $wpdb->update(
-        $wpdb->posts,
-        ['post_type' => 'kdquiz_question'],
-        ['post_type' => 'kd_quiz_question']
-    );
+    $legacy_questions = get_posts([
+        'post_type'      => 'kd_quiz_question',
+        'post_status'    => 'any',
+        'fields'         => 'ids',
+        'posts_per_page' => -1,
+        'no_found_rows'  => true,
+    ]);
 
-    if (false === $updated) {
+    if (empty($legacy_questions)) {
+        update_option('kdquiz_post_type_migrated', 1);
         return;
+    }
+
+    foreach ($legacy_questions as $question_id) {
+        $result = wp_update_post(
+            [
+                'ID'        => $question_id,
+                'post_type' => 'kdquiz_question',
+            ],
+            true
+        );
+
+        if (is_wp_error($result)) {
+            continue;
+        }
     }
 
     update_option('kdquiz_post_type_migrated', 1);
@@ -178,17 +194,19 @@ function kdquiz_display_meta_box($post) {
             esc_html__('Mark as correct', 'kd-quiz')
         );
 
-        $status_attributes = [
-            'class="kdquiz-answer-status"',
-            'data-active-text="' . esc_attr($active_status_text) . '"',
-        ];
-
         if ((int) $correct_answer === $i) {
-            $status_attributes[] = 'role="status"';
-            printf('<span %1$s>%2$s</span>', implode(' ', $status_attributes), $active_status_text);
+            printf(
+                '<span class="%1$s" data-active-text="%2$s" role="status">%3$s</span>',
+                esc_attr('kdquiz-answer-status'),
+                esc_attr($active_status_text),
+                esc_html($active_status_text)
+            );
         } else {
-            $status_attributes[] = 'aria-hidden="true"';
-            printf('<span %s></span>', implode(' ', $status_attributes));
+            printf(
+                '<span class="%1$s" data-active-text="%2$s" aria-hidden="true"></span>',
+                esc_attr('kdquiz-answer-status'),
+                esc_attr($active_status_text)
+            );
         }
         echo '</div>';
 

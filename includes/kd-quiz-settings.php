@@ -190,6 +190,7 @@ function kdquiz_handle_reset_stats() {
         [
             'page'                    => 'kdquiz-settings',
             'kdquiz_reset_stats_done' => 1,
+            'kdquiz_reset_stats_notice_nonce' => wp_create_nonce('kdquiz_reset_notice'),
         ],
         admin_url('admin.php')
     );
@@ -201,7 +202,12 @@ function kdquiz_handle_reset_stats() {
 add_action('admin_post_kdquiz_reset_stats', __NAMESPACE__ . '\\kdquiz_handle_reset_stats');
 
 function kdquiz_maybe_render_reset_notice() {
-    if (!isset($_GET['kdquiz_reset_stats_done'])) {
+    if (!isset($_GET['kdquiz_reset_stats_done'], $_GET['kdquiz_reset_stats_notice_nonce'])) {
+        return;
+    }
+
+    $notice_nonce = sanitize_text_field(wp_unslash($_GET['kdquiz_reset_stats_notice_nonce']));
+    if (!wp_verify_nonce($notice_nonce, 'kdquiz_reset_notice')) {
         return;
     }
 

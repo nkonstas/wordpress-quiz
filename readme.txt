@@ -3,7 +3,7 @@ Contributors: nkonstas
 Tags: quiz, education, engagement, shortcode, ajax
 Requires at least: 5.4
 Tested up to: 6.8
-Stable tag: 1.3.2
+Stable tag: 1.3.3
 Requires PHP: 7.2
 License: GPLv3 or later
 License URI: https://github.com/nkonstas/wordpress-quiz/blob/main/LICENSE
@@ -44,6 +44,11 @@ No. The plugin stores aggregate view and answer counts per question only.
 4. Front-end quiz card with score summary.
 
 == Changelog ==
+= 1.3.3 =
+* Escapes the “Correct choice” status pill output and adds a nonce check to the reset notice flow to address WordPress.org review feedback.
+* Replaces the legacy direct SQL migration with `wp_update_post()` to respect object caching and coding standards.
+* Rebuilds the front-end metadata so the packaged assets report version 1.3.3.
+
 = 1.3.2 =
 * Refreshes the Edit Question admin UI with a clear “Mark as correct” pill and row highlight so the chosen answer stands out.
 * Adds helper text and status chips to reinforce which answer will be saved as correct.
@@ -77,6 +82,9 @@ No. The plugin stores aggregate view and answer counts per question only.
 * Refreshed readme to pass the WordPress.org validator and declared testing up to WordPress 6.5.
 
 == Upgrade Notice ==
+= 1.3.3 =
+Update to align with the latest WordPress.org security review feedback and ensure migrations honour object caching.
+
 = 1.3.2 =
 Update for a clearer “Mark as correct” workflow inside the question editor, plus refreshed admin styling.
 
