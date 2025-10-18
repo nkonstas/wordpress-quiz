@@ -20,6 +20,35 @@ if (!defined('ABSPATH')) {
 // Shared data
 //
 
+function kdquiz_get_quiz_styles() {
+    // Options exposed to editors; keep ids in sync with the CSS bundle.
+    return [
+        'kdquiz_style_1'      => 'Vibrant Look',
+        'kdquiz_style_2'      => 'Light Look',
+        'kdquiz_style_3'      => 'Dark Look',
+        'kdquiz_style_custom' => 'Custom',
+    ];
+}
+
+function kdquiz_normalize_style_slug($value) {
+    $value = sanitize_key($value);
+
+    if ('' === $value) {
+        return 'kdquiz_style_1';
+    }
+
+    if (strpos($value, 'kd_quiz_style_') === 0) {
+        $value = 'kdquiz_' . substr($value, strlen('kd_quiz_'));
+    }
+
+    $styles = kdquiz_get_quiz_styles();
+    if (!isset($styles[$value])) {
+        return 'kdquiz_style_1';
+    }
+
+    return $value;
+}
+
 class Shared {
     private static $instance = null;
     private $strings;

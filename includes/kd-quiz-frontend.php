@@ -20,7 +20,7 @@ if (!defined('ABSPATH')) {
 // Frontend bootstrap
 //
 
-add_shortcode('kdquiz', function () {
+function kdquiz_render_quiz_container() {
     global $kdquiz_shortcode_used;
 
     // We only ever want one quiz instance per request.
@@ -30,8 +30,12 @@ add_shortcode('kdquiz', function () {
 
     $kdquiz_shortcode_used = true;
 
-    return '<div id="kdquiz-container"></div>';
-});
+    return '<div id="kdquiz-container" class="kdquiz-container kd-quiz-container"></div>';
+}
+
+add_shortcode('kdquiz', __NAMESPACE__ . '\\kdquiz_render_quiz_container');
+// Legacy shortcode maintained for backwards compatibility with existing content.
+add_shortcode('kd-quiz', __NAMESPACE__ . '\\kdquiz_render_quiz_container');
 
 add_action('wp_enqueue_scripts', function () {
     // Version assets on mtime so browsers pick up fresh bundles after releases.
@@ -52,13 +56,15 @@ add_action('wp_enqueue_scripts', function () {
 
     $questions = absint(get_option('kdquiz_number_questions', 5));
     $min_distance = absint(get_option('kdquiz_min_distance', 0));
+    $style_option = kdquiz_normalize_style_slug(get_option('kdquiz_card_style', 'kdquiz_style_1'));
 
     $replacements = [
         'ajax_url'            => admin_url('admin-ajax.php'),
         'nonce'               => wp_create_nonce('kdquiz_ajax_nonce'),
         'element_selector'    => '#kdquiz-container',
+        'legacy_element_selector' => '#kd-quiz-container',
         'questions'           => $questions > 0 ? $questions : 5,
-        'style'               => sanitize_key(get_option('kdquiz_card_style', 'kdquiz_style_1')),
+        'style'               => $style_option,
         'auto_insert_enabled' => (int) get_option('kdquiz_enable_auto_insert', 0),
         'heading_selector'    => sanitize_text_field(get_option('kdquiz_heading_selector', 'h2, h3')),
         'heading_match'       => sanitize_text_field(get_option('kdquiz_heading_match', '')),

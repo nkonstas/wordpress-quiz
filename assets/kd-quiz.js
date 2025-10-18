@@ -296,9 +296,12 @@ class kdQuizMgr {
 
   init() {
     document.addEventListener("DOMContentLoaded", () => {
-      const quizElements = document.querySelectorAll(
-        kdQuizAjax.element_selector
-      );
+      const selectors = [kdQuizAjax.element_selector].filter(Boolean);
+      if (kdQuizAjax.legacy_element_selector) {
+        selectors.push(kdQuizAjax.legacy_element_selector);
+      }
+
+      const quizElements = document.querySelectorAll(selectors.join(", "));
 
       if (quizElements.length === 0 && kdQuizAjax.auto_insert_enabled) {
         const minDistanceFromTop =
@@ -332,6 +335,7 @@ class kdQuizMgr {
             // Create a new div and insert it before the heading
             const newDiv = document.createElement("div");
             newDiv.id = kdQuizAjax.element_selector.replace("#", ""); // Assuming element_selector is an ID
+            newDiv.className = "kdquiz-container kd-quiz-container";
             heading.parentNode.insertBefore(newDiv, heading);
 
             // Fetch questions and create quiz in the new div

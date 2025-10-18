@@ -20,16 +20,6 @@ if (!defined('ABSPATH')) {
 // Settings
 //
 
-function kdquiz_get_quiz_styles() {
-    // Options exposed to editors; keep ids in sync with the CSS bundle.
-    return [
-        'kdquiz_style_1'      => 'Vibrant Look',
-        'kdquiz_style_2'      => 'Light Look',
-        'kdquiz_style_3'      => 'Dark Look',
-        'kdquiz_style_custom' => 'Custom',
-    ];
-}
-
 function kdquiz_settings_page() {
     ?>
     <div class="wrap">
@@ -80,8 +70,7 @@ function kdquiz_register_settings() {
     register_setting('kdquiz_options_group', 'kdquiz_number_questions', ['sanitize_callback' => 'absint']);
     register_setting('kdquiz_options_group', 'kdquiz_card_style', [
         'sanitize_callback' => function ($value) {
-            $styles = kdquiz_get_quiz_styles();
-            return array_key_exists($value, $styles) ? $value : 'kdquiz_style_1';
+            return kdquiz_normalize_style_slug($value);
         },
     ]);
     register_setting('kdquiz_options_group', 'kdquiz_enable_auto_insert', ['sanitize_callback' => function ($value) {
@@ -177,6 +166,14 @@ function kdquiz_register_settings() {
 
 }
 
+function kdquiz_migrate_style_option() {
+    $current = get_option('kdquiz_card_style', '');
+    if (is_string($current) && strpos($current, 'kd_quiz_style_') === 0) {
+        update_option('kdquiz_card_style', kdquiz_normalize_style_slug($current));
+    }
+}
+
+add_action('admin_init', __NAMESPACE__ . '\\kdquiz_migrate_style_option', 5);
 add_action('admin_init', __NAMESPACE__ . '\\kdquiz_register_settings');
 
 function kdquiz_handle_reset_stats() {
@@ -249,7 +246,7 @@ function kdquiz_number_questions_field() {
 
 function kdquiz_card_style_field() {
     $styles = kdquiz_get_quiz_styles();
-    $current_value = get_option('kdquiz_card_style', 'kdquiz_style_1');
+    $current_value = kdquiz_normalize_style_slug(get_option('kdquiz_card_style', 'kdquiz_style_1'));
 
     echo '<select name="' . esc_attr('kdquiz_card_style') . '">';
     foreach ($styles as $id => $name) {
