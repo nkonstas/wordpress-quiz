@@ -39,15 +39,16 @@ function kdquiz_import_questions_page() {
 
 function kdquiz_import_questions_handler() {
     if (!isset($_POST['kdquiz_questions_json'])) {
-        wp_safe_redirect(
-            add_query_arg(
-                [
-                    'page'   => 'kdquiz-import-questions',
-                    'status' => 'missing',
-                ],
-                admin_url('admin.php')
-            )
+        $redirect_url = add_query_arg(
+            [
+                'page'                 => 'kdquiz-import-questions',
+                'status'               => 'missing',
+                'kdquiz_import_notice' => wp_create_nonce('kdquiz_import_notice'),
+            ],
+            admin_url('admin.php')
         );
+
+        wp_safe_redirect($redirect_url);
         exit;
     }
 
@@ -64,10 +65,17 @@ function kdquiz_import_questions_handler() {
     $questions      = json_decode($questions_json, true);
 
     if (!is_array($questions)) {
-        add_action('admin_notices', function () {
-            echo '<div class="notice notice-error is-dismissible"><p>' . esc_html__('Invalid JSON payload. Please review your input.', 'kd-quiz') . '</p></div>';
-        });
-        return;
+        $redirect_url = add_query_arg(
+            [
+                'page'                 => 'kdquiz-import-questions',
+                'status'               => 'invalid_json',
+                'kdquiz_import_notice' => wp_create_nonce('kdquiz_import_notice'),
+            ],
+            admin_url('admin.php')
+        );
+
+        wp_safe_redirect($redirect_url);
+        exit;
     }
 
     $count_added   = 0;
@@ -106,7 +114,7 @@ function kdquiz_import_questions_handler() {
 add_action('admin_post_kdquiz_import_questions', __NAMESPACE__ . '\\kdquiz_import_questions_handler');
 
 add_action('admin_notices', function () {
-    if (!isset($_GET['imported'], $_GET['duplicates'], $_GET['kdquiz_import_notice'])) {
+    if (!isset($_GET['kdquiz_import_notice'])) {
         return;
     }
 
@@ -115,23 +123,52 @@ add_action('admin_notices', function () {
         return;
     }
 
-    $count      = absint($_GET['imported']);
-    $duplicates = absint($_GET['duplicates']);
+    $page      = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '';
+    $post_type = isset($_GET['post_type']) ? sanitize_key(wp_unslash($_GET['post_type'])) : '';
 
-    if (0 === $count && 0 === $duplicates) {
+    if ('kdquiz-import-questions' !== $page && 'kdquiz_question' !== $post_type) {
         return;
     }
 
-    /* translators: 1: number of imported questions, 2: number of duplicates ignored. */
-    $kdquiz_import_tpl = __('%1$s questions imported, %2$s duplicates ignored.', 'kd-quiz');
-    $kdquiz_import_msg = sprintf(
-        $kdquiz_import_tpl,
-        number_format_i18n($count),
-        number_format_i18n($duplicates)
-    );
+    if (isset($_GET['imported'], $_GET['duplicates'])) {
+        $count      = absint($_GET['imported']);
+        $duplicates = absint($_GET['duplicates']);
+
+        if (0 === $count && 0 === $duplicates) {
+            return;
+        }
+
+        /* translators: 1: number of imported questions, 2: number of duplicates ignored. */
+        $kdquiz_import_tpl = __('%1$s questions imported, %2$s duplicates ignored.', 'kd-quiz');
+        $kdquiz_import_msg = sprintf(
+            $kdquiz_import_tpl,
+            number_format_i18n($count),
+            number_format_i18n($duplicates)
+        );
+        printf(
+            '<div class="notice notice-success is-dismissible"><p>%s</p></div>',
+            esc_html($kdquiz_import_msg)
+        );
+        return;
+    }
+
+    if (!isset($_GET['status'])) {
+        return;
+    }
+
+    $status = sanitize_key(wp_unslash($_GET['status']));
+    $messages = [
+        'missing'      => __('Please provide quiz data before attempting the import.', 'kd-quiz'),
+        'invalid_json' => __('Invalid JSON payload. Please review your input.', 'kd-quiz'),
+    ];
+
+    if (!isset($messages[$status])) {
+        return;
+    }
+
     printf(
-        '<div class="notice notice-success is-dismissible"><p>%s</p></div>',
-        esc_html($kdquiz_import_msg)
+        '<div class="notice notice-error is-dismissible"><p>%s</p></div>',
+        esc_html($messages[$status])
     );
 });
 

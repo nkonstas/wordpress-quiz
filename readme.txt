@@ -3,7 +3,7 @@ Contributors: nkonstas
 Tags: quiz, education, engagement, shortcode, ajax
 Requires at least: 5.4
 Tested up to: 6.8
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 Requires PHP: 7.2
 License: GPLv3 or later
 License URI: https://github.com/nkonstas/wordpress-quiz/blob/main/LICENSE
@@ -43,7 +43,13 @@ No. The plugin stores aggregate view and answer counts per question only.
 3. Import a batch of questions from JSON.
 4. Front-end quiz card with score summary.
 
+= 1.3.1 =
 == Changelog ==
+= 1.3.1 =
+* Improves the JSON import UX by redirecting back to the import screen with contextual error messaging when the payload is missing or invalid.
+* Adds nonce-protected status flags so both success and error notices render in the proper admin screens.
+* Rebuilds all assets for the 1.3.1 maintenance release.
+
 = 1.3.0 =
 * Hardened admin reset/import handlers by routing through `admin-post.php` with nonce and capability checks to satisfy the WordPress.org review.
 * Standardised on the `kdquiz` prefix across CPTs, AJAX, styles, and shortcodes while keeping legacy identifiers compatible for existing installs.
@@ -67,6 +73,9 @@ No. The plugin stores aggregate view and answer counts per question only.
 * Refreshed readme to pass the WordPress.org validator and declared testing up to WordPress 6.5.
 
 == Upgrade Notice ==
+= 1.3.1 =
+Maintenance release focused on the JSON importer UX: failed imports now return you to the admin screen with clear messaging, plus refreshed assets.
+
 = 1.2.0 =
 Compatibility and security hardening release. Please update to ensure translator hints, escaping, nonce verification, and import checks match current WordPress guidelines.
 = 1.1.0 =

@@ -1,2 +1,3 @@
 - [x] Added a dedicated `admin_post_kdquiz_reset_stats` handler with nonce + `current_user_can` checks and redirected notices so the reset form no longer runs on every admin request.
 - [x] Replaced legacy two-letter prefixes by standardising on the `kdquiz` prefix across post types, AJAX actions, shortcodes, CSS/JS selectors, and documentation; added a migration to move existing `kd_quiz_question` posts, normalised stored style identifiers, and kept the legacy `[kd-quiz]` shortcode as a backwards-compatible alias.
+- [x] Hardened the JSON importer UX by redirecting back to the admin screen with nonce-protected status flags so both error and success notices surface consistently.
