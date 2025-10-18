@@ -21,6 +21,22 @@ if (!defined('ABSPATH')) {
 //
 
 function kdquiz_import_questions_page() {
+    $example_payload = wp_json_encode(
+        [
+            [
+                'questionText'    => 'What is the capital of France?',
+                'options'         => [
+                    ['optionId' => 'option_id_0', 'optionText' => 'Paris'],
+                    ['optionId' => 'option_id_1', 'optionText' => 'Berlin'],
+                    ['optionId' => 'option_id_2', 'optionText' => 'Madrid'],
+                    ['optionId' => 'option_id_3', 'optionText' => 'Rome'],
+                ],
+                'correctOptionId' => 'option_id_0',
+                'explanation'     => 'Paris has been the capital of France since 508 A.D.',
+            ],
+        ],
+        JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
+    );
     ?>
     <div class="wrap">
         <h1><?php esc_html_e('Import Quiz Questions', 'kd-quiz'); ?></h1>
@@ -29,6 +45,8 @@ function kdquiz_import_questions_page() {
             <?php wp_nonce_field('kdquiz_import_questions_action', 'kdquiz_import_questions_nonce'); ?>
             <input type="hidden" name="action" value="kdquiz_import_questions">
             <textarea name="kdquiz_questions_json" rows="10" cols="50" class="large-text" placeholder='[ {"questionText":"..."} ]'></textarea>
+            <p><strong><?php esc_html_e('Example JSON structure', 'kd-quiz'); ?></strong></p>
+            <pre class="kdquiz-import-example"><code><?php echo esc_html($example_payload); ?></code></pre>
             <p>
                 <input type="submit" value="<?php esc_attr_e('Import Questions', 'kd-quiz'); ?>" class="button button-primary">
             </p>

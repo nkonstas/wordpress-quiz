@@ -248,6 +248,7 @@ function kdquiz_number_questions_field() {
         esc_attr('kdquiz_number_questions'),
         esc_attr((int) $value)
     );
+    echo '<p class="description">' . esc_html__('Controls how many questions the front-end fetches per quiz rotation. Increasing this raises the pool pulled from the question CPT.', 'kd-quiz') . '</p>';
 }
 
 function kdquiz_card_style_field() {
@@ -264,6 +265,7 @@ function kdquiz_card_style_field() {
         );
     }
     echo '</select>';
+    echo '<p class="description">' . esc_html__('Selects the CSS theme class applied to quiz cards. Custom styles should enqueue their own rules targeting the chosen slug.', 'kd-quiz') . '</p>';
 }
 
 function kdquiz_enable_auto_insert_field() {
@@ -273,6 +275,7 @@ function kdquiz_enable_auto_insert_field() {
         esc_attr('kdquiz_enable_auto_insert'),
         checked(1, $option, false)
     );
+    echo '<p class="description">' . esc_html__('When enabled, the plugin injects a quiz container automatically instead of waiting for the `[kdquiz]` shortcode.', 'kd-quiz') . '</p>';
 }
 
 function kdquiz_heading_selector_field() {
@@ -282,6 +285,7 @@ function kdquiz_heading_selector_field() {
         esc_attr('kdquiz_heading_selector'),
         esc_attr($option)
     );
+    echo '<p class="description">' . esc_html__('CSS selector list used to scan the post content for eligible headings when auto insert is on (e.g. `h2, h3`).', 'kd-quiz') . '</p>';
 }
 
 function kdquiz_heading_match_field() {
@@ -291,6 +295,7 @@ function kdquiz_heading_match_field() {
         esc_attr('kdquiz_heading_match'),
         esc_attr($option)
     );
+    echo '<p class="description">' . esc_html__('Optional text filter for headings; supports `*` wildcards (e.g. `*Quiz*`) to target specific titles.', 'kd-quiz') . '</p>';
 }
 
 function kdquiz_min_distance_field() {
@@ -300,4 +305,5 @@ function kdquiz_min_distance_field() {
         esc_attr('kdquiz_min_distance'),
         esc_attr($option)
     );
+    echo '<p class="description">' . esc_html__('Minimum scroll threshold (as a percentage of the viewport height) before the auto-inserted quiz appears. Set to 0 to allow insertion near the top.', 'kd-quiz') . '</p>';
 }

@@ -3,7 +3,7 @@ Contributors: nkonstas
 Tags: quiz, education, engagement, shortcode, ajax
 Requires at least: 5.4
 Tested up to: 6.8
-Stable tag: 1.3.3
+Stable tag: 1.3.4
 Requires PHP: 7.2
 License: GPLv3 or later
 License URI: https://github.com/nkonstas/wordpress-quiz/blob/main/LICENSE
@@ -37,6 +37,9 @@ Yes. Head to **Quiz Questions → Import Questions**, paste a JSON payload with 
 = Does the plugin track personal data? =
 No. The plugin stores aggregate view and answer counts per question only.
 
+= 1.3.4 =
+Quality-of-life release: new JSON example in the importer, updated review checklist, and rebuilt bundles for the 1.3.4 package.
+
 == Screenshots ==
 1. Manage questions and see engagement metrics in the WordPress admin.
 2. Configure button text, grades, and auto-insert settings.
@@ -44,6 +47,12 @@ No. The plugin stores aggregate view and answer counts per question only.
 4. Front-end quiz card with score summary.
 
 == Changelog ==
+= 1.3.4 =
+* Adds an inline JSON example below the importer textarea so editors can copy the expected payload shape (`includes/kd-quiz-import.php`).
+* Adds concise help text under each Quiz Settings control so site owners know how auto-insert and styling options behave (`includes/kd-quiz-settings.php`).
+* Documents all security/prefix fixes in `ReviewFixes.txt` for easy reviewer handoff (e.g. `ReviewFixes.txt:1`).
+* Rebuilds scripts and metadata so the distributed bundles advertise version 1.3.4.
+
 = 1.3.3 =
 * Escapes the “Correct choice” status pill output and adds a nonce check to the reset notice flow to address WordPress.org review feedback.
 * Replaces the legacy direct SQL migration with `wp_update_post()` to respect object caching and coding standards.
@@ -82,6 +91,9 @@ No. The plugin stores aggregate view and answer counts per question only.
 * Refreshed readme to pass the WordPress.org validator and declared testing up to WordPress 6.5.
 
 == Upgrade Notice ==
+= 1.3.4 =
+Quality-of-life release: new JSON example in the importer, inline quiz-setting help, updated review checklist, and rebuilt bundles for the 1.3.4 package.
+
 = 1.3.3 =
 Update to align with the latest WordPress.org security review feedback and ensure migrations honour object caching.
 
