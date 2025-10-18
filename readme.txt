@@ -3,7 +3,7 @@ Contributors: nkonstas
 Tags: quiz, education, engagement, shortcode, ajax
 Requires at least: 5.4
 Tested up to: 6.8
-Stable tag: 1.2.2
+Stable tag: 1.3.0
 Requires PHP: 7.2
 License: GPLv3 or later
 License URI: https://github.com/nkonstas/wordpress-quiz/blob/main/LICENSE
@@ -44,6 +44,11 @@ No. The plugin stores aggregate view and answer counts per question only.
 4. Front-end quiz card with score summary.
 
 == Changelog ==
+= 1.3.0 =
+* Hardened admin reset/import handlers by routing through `admin-post.php` with nonce and capability checks to satisfy the WordPress.org review.
+* Standardised on the `kdquiz` prefix across CPTs, AJAX, styles, and shortcodes while keeping legacy identifiers compatible for existing installs.
+* Normalised stored style slugs and added a `[kd-quiz]` shortcode alias so upgrades require no manual content changes.
+
 = 1.2.2 =
 * Random fetch fallback to ensure a full question set even when all are marked viewed (keeps VIP-safe query semantics).
 * Packaging and i18n: include `/languages` in release; remove discouraged `load_plugin_textdomain()` call.
