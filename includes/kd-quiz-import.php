@@ -10,7 +10,7 @@
  * License URI:       https://github.com/nkonstas/wordpress-quiz/blob/main/LICENSE
  */
 
-namespace KDQuiz;
+namespace KDQuizPlugin;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -25,8 +25,9 @@ function kdquiz_import_questions_page() {
     <div class="wrap">
         <h1><?php esc_html_e('Import Quiz Questions', 'kd-quiz'); ?></h1>
         <p><?php esc_html_e('Bulk import multiple quiz questions using a structured JSON array. Each entry must include the question text, up to four answer options, the correct option id, and an explanation.', 'kd-quiz'); ?></p>
-        <form action="" method="post">
+        <form action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post">
             <?php wp_nonce_field('kdquiz_import_questions_action', 'kdquiz_import_questions_nonce'); ?>
+            <input type="hidden" name="action" value="kdquiz_import_questions">
             <textarea name="kdquiz_questions_json" rows="10" cols="50" class="large-text" placeholder='[ {"questionText":"..."} ]'></textarea>
             <p>
                 <input type="submit" value="<?php esc_attr_e('Import Questions', 'kd-quiz'); ?>" class="button button-primary">
@@ -36,9 +37,18 @@ function kdquiz_import_questions_page() {
     <?php
 }
 
-add_action('admin_init', function () {
+function kdquiz_import_questions_handler() {
     if (!isset($_POST['kdquiz_questions_json'])) {
-        return;
+        wp_safe_redirect(
+            add_query_arg(
+                [
+                    'page'   => 'kdquiz-import-questions',
+                    'status' => 'missing',
+                ],
+                admin_url('admin.php')
+            )
+        );
+        exit;
     }
 
     // Treat the import endpoint like a mini API – nonce + capability required.
@@ -81,7 +91,7 @@ add_action('admin_init', function () {
 
     $redirect_url = add_query_arg(
         [
-            'post_type'  => 'kd_quiz_question',
+            'post_type'  => 'kdquiz_question',
             'imported'   => $count_added,
             'duplicates' => $count_ignored,
             'kdquiz_import_notice' => wp_create_nonce('kdquiz_import_notice'),
@@ -89,9 +99,11 @@ add_action('admin_init', function () {
         admin_url('edit.php')
     );
 
-    wp_redirect($redirect_url);
+    wp_safe_redirect($redirect_url);
     exit;
-});
+}
+
+add_action('admin_post_kdquiz_import_questions', __NAMESPACE__ . '\\kdquiz_import_questions_handler');
 
 add_action('admin_notices', function () {
     if (!isset($_GET['imported'], $_GET['duplicates'], $_GET['kdquiz_import_notice'])) {
@@ -146,7 +158,7 @@ function kdquiz_question_exists($question_text) {
     $post_title = wp_strip_all_tags($question_text);
 
     $query = new \WP_Query([
-        'post_type'      => 'kd_quiz_question',
+        'post_type'      => ['kdquiz_question', 'kd_quiz_question'],
         'post_status'    => 'publish',
         'posts_per_page' => 10,
         'fields'         => 'ids',
@@ -173,7 +185,7 @@ function kdquiz_create_question($question) {
         [
             'post_title'  => $question_text,
             'post_status' => 'publish',
-            'post_type'   => 'kd_quiz_question',
+            'post_type'   => 'kdquiz_question',
         ],
         true
     );

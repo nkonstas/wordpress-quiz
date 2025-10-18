@@ -14,6 +14,6 @@ Install
 
 Verify
 - Admin: Import JSON, confirm success notice and counts.
-- Front end: `[kd-quiz]` renders; random questions exclude recently viewed.
+- Front end: `[kdquiz]` renders; random questions exclude recently viewed.
 - Security: AJAX works only with valid nonce; inputs sanitized.
 

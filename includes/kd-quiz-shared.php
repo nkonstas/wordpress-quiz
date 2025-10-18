@@ -10,7 +10,7 @@
  * License URI:       https://github.com/nkonstas/wordpress-quiz/blob/main/LICENSE
  */
 
-namespace KDQuiz;
+namespace KDQuizPlugin;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -52,61 +52,61 @@ class Shared {
                 'default_value' => 'View Your Score'
             ],
             [
-                'key' => 'kd_quiz_text_score_grade',
+                'key' => 'kdquiz_text_score_grade',
                 'option_name' => 'kdquiz_text_score_grade',
                 'description' => 'Score Grade',
                 'default_value' => 'Grade'
             ],
             [
-                'key' => 'kd_quiz_text_score_grade_a',
+                'key' => 'kdquiz_text_score_grade_a',
                 'option_name' => 'kdquiz_text_score_grade_a',
                 'description' => 'Grade A',
                 'default_value' => 'A'
             ],
             [
-                'key' => 'kd_quiz_text_score_grade_b',
+                'key' => 'kdquiz_text_score_grade_b',
                 'option_name' => 'kdquiz_text_score_grade_b',
                 'description' => 'Grade B',
                 'default_value' => 'B'
             ],
             [
-                'key' => 'kd_quiz_text_score_grade_c',
+                'key' => 'kdquiz_text_score_grade_c',
                 'option_name' => 'kdquiz_text_score_grade_c',
                 'description' => 'Grade C',
                 'default_value' => 'C'
             ],
             [
-                'key' => 'kd_quiz_text_score_grade_f',
+                'key' => 'kdquiz_text_score_grade_f',
                 'option_name' => 'kdquiz_text_score_grade_f',
                 'description' => 'Grade F',
                 'default_value' => 'F'
             ],
             [
-                'key' => 'kd_quiz_text_score_percentage',
+                'key' => 'kdquiz_text_score_percentage',
                 'option_name' => 'kdquiz_text_score_percentage',
                 'description' => 'Score Percentage',
                 'default_value' => 'Your Score'
             ],
             [
-                'key' => 'kd_quiz_text_score_grade_a_message',
+                'key' => 'kdquiz_text_score_grade_a_message',
                 'option_name' => 'kdquiz_text_score_grade_a_message',
                 'description' => 'Grade A Message',
                 'default_value' => 'Excellent work! You have a strong understanding of the material.'
             ],
             [
-                'key' => 'kd_quiz_text_score_grade_b_message',
+                'key' => 'kdquiz_text_score_grade_b_message',
                 'option_name' => 'kdquiz_text_score_grade_b_message',
                 'description' => 'Grade B Message',
                 'default_value' => 'Good job! You\'ve grasped most of the concepts well.'
             ],
             [
-                'key' => 'kd_quiz_text_score_grade_c_message',
+                'key' => 'kdquiz_text_score_grade_c_message',
                 'option_name' => 'kdquiz_text_score_grade_c_message',
                 'description' => 'Grade C Message',
                 'default_value' => 'Not bad, but there\'s room for improvement. Keep learning!'
             ],
             [
-                'key' => 'kd_quiz_text_score_grade_f_message',
+                'key' => 'kdquiz_text_score_grade_f_message',
                 'option_name' => 'kdquiz_text_score_grade_f_message',
                 'description' => 'Grade F Message',
                 'default_value' => 'Looks like you need a bit more practice. Don\'t give up!'

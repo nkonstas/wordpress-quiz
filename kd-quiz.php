@@ -6,7 +6,7 @@
  * with the GPL 3.0 license, any modifications or enhancements made to this software must be
  * shared and submitted to the repository. Please review the LICENSE file for more details.
  *
- * @package           KDQuiz
+ * @package           KDQuizPlugin
  * @wordpress-plugin
  * Plugin Name:       KD Quiz – Interactive Quiz
  * Plugin URI:        https://github.com/nkonstas/wordpress-quiz
@@ -22,7 +22,7 @@
  * Text Domain:       kd-quiz
  */
 
-namespace KDQuiz;
+namespace KDQuizPlugin;
 
 // Stop execution early when someone hits the file directly.
 if (!defined('WPINC')) {

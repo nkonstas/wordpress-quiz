@@ -5,7 +5,7 @@ KDQuiz is a simple WordPress plugin designed to enhance user engagement through 
 
 ## Demo
 
-You can find a demo of the plugin in this [winter salad recipe](https://ketodiet.com/winter-salad-with-roast-pumpkin-feta-and-cranberries/#kd-quiz-container) where the user is presented with questions relevant to low‑carb cooking. This is key to using this plugin: the questions you create should be relevant to your content to maximise engagement.
+You can find a demo of the plugin in this [winter salad recipe](https://ketodiet.com/winter-salad-with-roast-pumpkin-feta-and-cranberries/#kdquiz-container) where the user is presented with questions relevant to low‑carb cooking. This is key to using this plugin: the questions you create should be relevant to your content to maximise engagement.
 
 ## Features
 - **Customizable Quizzes**: Create your own questions and tailor the quiz to match your website's content and style.
@@ -19,7 +19,7 @@ The primary goal of KDQuiz is to increase user interaction and engagement on you
 ## Installation and Usage
 1. **Installation**: Download the plugin and install it on your WordPress site.
 2. **Creating Quizzes**: Access the quiz creation interface from the WordPress dashboard > Quiz Questions.
-3. **Shortcode Usage**: Insert `[kd-quiz]` shortcode anywhere in your post or page to display the quiz. The shortcode renders `<div id="kd-quiz-container"></div>`, which the script upgrades into the quiz card. *Please note that currently a page or post can only have one quiz*.
+3. **Shortcode Usage**: Insert `[kdquiz]` shortcode anywhere in your post or page to display the quiz. The shortcode renders `<div id="kdquiz-container"></div>`, which the script upgrades into the quiz card. *Please note that currently a page or post can only have one quiz*.
 4. **Setting Auto-Insertion Rules**: Configure rules for automatic quiz insertion in pages without the shortcode. This is an optional step, if you prefer precise positioning control use the shortcode above.
 
 ## Quick Guide
@@ -58,56 +58,56 @@ The primary goal of KDQuiz is to increase user interaction and engagement on you
 Contributions to KDQuiz are welcome! Feel free to fork the repository, make your changes, and submit pull requests.
 
 ## Styling
-The plugin offers three presets plus a Custom option. The root element uses `kd-quiz-card` and a style class:
-- `kd_quiz_style_1` (Vibrant Look)
-- `kd_quiz_style_2` (Light Look)
-- `kd_quiz_style_3` (Dark Look)
-- `kd_quiz_style_custom` (Custom — add your own CSS)
-Target `kd_quiz_style_custom` in your theme or custom CSS for bespoke theming.
+The plugin offers three presets plus a Custom option. The root element uses `kdquiz-card` and a style class:
+- `kdquiz_style_1` (Vibrant Look)
+- `kdquiz_style_2` (Light Look)
+- `kdquiz_style_3` (Dark Look)
+- `kdquiz_style_custom` (Custom — add your own CSS)
+Target `kdquiz_style_custom` in your theme or custom CSS for bespoke theming.
 
 
 ### HTML And CSS Classes 
 
 #### Questions & Answers
 
-The HTML structure for the quiz questions and answers is outlined below. To customize specific elements within the quiz, use the selector `.kd_quiz_style_custom .<nested class>`. This approach offers flexibility in styling, allowing for unique visual presentations of the quiz elements. However, it's recommended to avoid styling the `kd-card-inner` class directly, as it's integral to the card flip animation, and modifying it may impact the quiz's interactive functionality.
+The HTML structure for the quiz questions and answers is outlined below. To customize specific elements within the quiz, use the selector `.kdquiz_style_custom .<nested class>`. This approach offers flexibility in styling, allowing for unique visual presentations of the quiz elements. However, it's recommended to avoid styling the `kdquiz-card-inner` class directly, as it's integral to the card flip animation, and modifying it may impact the quiz's interactive functionality.
 
 ```html
-<div id="kd-quiz-container">
-  <div class="kd-quiz-card kd_quiz_style_custom">
-    <div class="kd-card-inner">
-      <div class="kd-card-face kd-card-front">
-        <p class="kd-question">Your question?</p>
-        <ul class="kd-options">
-          <li class="kd-option">Answer 1</li>
-          <li class="kd-option">Answer 2</li>
-          <li class="kd-option">Answer 3</li>
-          <li class="kd-option">Answer 4</li>
+<div id="kdquiz-container">
+  <div class="kdquiz-card kdquiz_style_custom">
+    <div class="kdquiz-card-inner">
+      <div class="kdquiz-card-face kdquiz-card-front">
+        <p class="kdquiz-question">Your question?</p>
+        <ul class="kdquiz-options">
+          <li class="kdquiz-option">Answer 1</li>
+          <li class="kdquiz-option">Answer 2</li>
+          <li class="kdquiz-option">Answer 3</li>
+          <li class="kdquiz-option">Answer 4</li>
         </ul>
       </div>
-	   <div class="kd-card-face kd-card-back">
-	     <p class="kd-incorrect">
-               <span class="kd-answer-icon"></span>Sorry, wrong answer.
-             </p>
-        <p class="kd-answer">Some explanation.</p>
-	     <button class="kd-action">Next Question</button>
-	   </div>
+      <div class="kdquiz-card-face kdquiz-card-back">
+        <p class="kdquiz-incorrect">
+          <span class="kdquiz-answer-icon"></span>Sorry, wrong answer.
+        </p>
+        <p class="kdquiz-answer">Some explanation.</p>
+        <button class="kdquiz-action">Next Question</button>
+      </div>
     </div>
   </div>
 </div>
 ```
 #### Score Card
-The score card is displayed after the quiz is completed, showcasing the user's performance. It's placed inside the `.kd-card-front` element, replacing the last question. The score card is wrapped in a `div` with a grade-specific class, which can be `kd-final-a`, `kd-final-b`, `kd-final-c`, or `kd-final-f`, reflecting the user's grade. These classes can be styled to highlight different performance levels visually. For example, `kd-final-a` could be styled with a bright, positive color to denote excellent performance, while `kd-final-f` might use a more subdued palette.
+The score card is displayed after the quiz is completed, showcasing the user's performance. It's placed inside the `.kdquiz-card-front` element, replacing the last question. The score card is wrapped in a `div` with a grade-specific class, which can be `kdquiz-final-a`, `kdquiz-final-b`, `kdquiz-final-c`, or `kdquiz-final-f`, reflecting the user's grade. These classes can be styled to highlight different performance levels visually. For example, `kdquiz-final-a` could be styled with a bright, positive color to denote excellent performance, while `kdquiz-final-f` might use a more subdued palette.
 
 ```html
-<div id="kd-quiz-container">
-  <div class="kd-quiz-card kd_quiz_style_custom">
-    <div class="kd-card-inner">
-      <div class="kd-card-face kd-card-front">
-        <div class="kd-final-f">
-          <p class="kd-final-grade">Grade <span>F</span></p>
-          <p class="kd-final-score">Your Score 0%</p>
-          <p class="kd-final-message">Looks like you need a bit more practice. Don't give up!</p>
+<div id="kdquiz-container">
+  <div class="kdquiz-card kdquiz_style_custom">
+    <div class="kdquiz-card-inner">
+      <div class="kdquiz-card-face kdquiz-card-front">
+        <div class="kdquiz-final-f">
+          <p class="kdquiz-final-grade">Grade <span>F</span></p>
+          <p class="kdquiz-final-score">Your Score 0%</p>
+          <p class="kdquiz-final-message">Looks like you need a bit more practice. Don't give up!</p>
         </div>
       </div>
     </div>

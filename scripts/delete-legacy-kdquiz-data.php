@@ -72,7 +72,7 @@ for ($i = 0; $i < 4; $i++) {
 }
 
 $questions = get_posts([
-    'post_type'      => 'kd_quiz_question',
+    'post_type'      => ['kdquiz_question', 'kd_quiz_question'],
     'posts_per_page' => -1,
     'fields'         => 'ids',
 ]);

@@ -10,7 +10,7 @@
  * License URI:       https://github.com/nkonstas/wordpress-quiz/blob/main/LICENSE
  */
 
-namespace KDQuiz;
+namespace KDQuizPlugin;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -20,7 +20,7 @@ if (!defined('ABSPATH')) {
 // Frontend bootstrap
 //
 
-add_shortcode('kd-quiz', function () {
+add_shortcode('kdquiz', function () {
     global $kdquiz_shortcode_used;
 
     // We only ever want one quiz instance per request.
@@ -30,7 +30,7 @@ add_shortcode('kd-quiz', function () {
 
     $kdquiz_shortcode_used = true;
 
-    return '<div id="kd-quiz-container"></div>';
+    return '<div id="kdquiz-container"></div>';
 });
 
 add_action('wp_enqueue_scripts', function () {
@@ -56,9 +56,9 @@ add_action('wp_enqueue_scripts', function () {
     $replacements = [
         'ajax_url'            => admin_url('admin-ajax.php'),
         'nonce'               => wp_create_nonce('kdquiz_ajax_nonce'),
-        'element_selector'    => '#kd-quiz-container',
+        'element_selector'    => '#kdquiz-container',
         'questions'           => $questions > 0 ? $questions : 5,
-        'style'               => sanitize_key(get_option('kdquiz_card_style', 'kd_quiz_style_1')),
+        'style'               => sanitize_key(get_option('kdquiz_card_style', 'kdquiz_style_1')),
         'auto_insert_enabled' => (int) get_option('kdquiz_enable_auto_insert', 0),
         'heading_selector'    => sanitize_text_field(get_option('kdquiz_heading_selector', 'h2, h3')),
         'heading_match'       => sanitize_text_field(get_option('kdquiz_heading_match', '')),

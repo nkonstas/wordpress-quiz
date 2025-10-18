@@ -10,7 +10,7 @@
  * License URI:       https://github.com/nkonstas/wordpress-quiz/blob/main/LICENSE
  */
 
-namespace KDQuiz;
+namespace KDQuizPlugin;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -23,10 +23,10 @@ if (!defined('ABSPATH')) {
 function kdquiz_get_quiz_styles() {
     // Options exposed to editors; keep ids in sync with the CSS bundle.
     return [
-        'kd_quiz_style_1'    => 'Vibrant Look',
-        'kd_quiz_style_2'    => 'Light Look',
-        'kd_quiz_style_3'    => 'Dark Look',
-        'kd_quiz_style_custom' => 'Custom',
+        'kdquiz_style_1'      => 'Vibrant Look',
+        'kdquiz_style_2'      => 'Light Look',
+        'kdquiz_style_3'      => 'Dark Look',
+        'kdquiz_style_custom' => 'Custom',
     ];
 }
 
@@ -37,11 +37,11 @@ function kdquiz_settings_page() {
         <form method="post" action="options.php">
             <?php
             settings_fields('kdquiz_options_group');
-            do_settings_sections('kd-quiz-settings');
+            do_settings_sections('kdquiz-settings');
             $text_replacements_url = plugin_dir_url(__FILE__) . '../assets/text-replacements.jpg';
             ?>
 
-            <div class="kd-text-replacements">
+            <div class="kdquiz-text-replacements">
                 <!-- Quick primer for anyone customising quiz copy without reading the docs. -->
                 <p><strong><?php esc_html_e('Below is an overview on how the text replacements are used in the quiz cards.', 'kd-quiz'); ?></strong></p>
                 <hr>
@@ -65,23 +65,23 @@ function kdquiz_settings_page() {
         </form>
         <hr style="margin-top: 2rem; margin-bottom: 2rem;">
         <h2><?php esc_html_e('Reset Stats', 'kd-quiz'); ?></h2>
-        <form method="post">
+        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
             <?php wp_nonce_field('kdquiz_reset_stats_action', 'kdquiz_reset_stats_nonce'); ?>
-            <input type="hidden" name="kdquiz_action" value="reset_quiz_stats">
-            <input type="submit" class="button button-primary kd-action-destructive" value="<?php esc_attr_e('Delete All Question Stats', 'kd-quiz'); ?>" onclick="return confirm('<?php echo esc_js(__('Are you sure you want to reset all quiz stats? This cannot be undone.', 'kd-quiz')); ?>');">
+            <input type="hidden" name="action" value="kdquiz_reset_stats">
+            <input type="submit" class="button button-primary kdquiz-action-destructive" value="<?php esc_attr_e('Delete All Question Stats', 'kd-quiz'); ?>" onclick="return confirm('<?php echo esc_js(__('Are you sure you want to reset all quiz stats? This cannot be undone.', 'kd-quiz')); ?>');">
             <p><?php esc_html_e('This will delete all statistics collected for your Quiz Questions. It will not delete any questions.', 'kd-quiz'); ?></p>
         </form>
     </div>
     <?php
 }
 
-add_action('admin_init', function () {
+function kdquiz_register_settings() {
     // Register every surface we expose through the settings UI up front.
     register_setting('kdquiz_options_group', 'kdquiz_number_questions', ['sanitize_callback' => 'absint']);
     register_setting('kdquiz_options_group', 'kdquiz_card_style', [
         'sanitize_callback' => function ($value) {
             $styles = kdquiz_get_quiz_styles();
-            return array_key_exists($value, $styles) ? $value : 'kd_quiz_style_1';
+            return array_key_exists($value, $styles) ? $value : 'kdquiz_style_1';
         },
     ]);
     register_setting('kdquiz_options_group', 'kdquiz_enable_auto_insert', ['sanitize_callback' => function ($value) {
@@ -98,14 +98,14 @@ add_action('admin_init', function () {
         'kdquiz_settings_general_section',
         __('General Settings', 'kd-quiz'),
         null,
-        'kd-quiz-settings'
+        'kdquiz-settings'
     );
 
     add_settings_field(
         'kdquiz_number_questions',
         __('Number of Questions', 'kd-quiz'),
         __NAMESPACE__ . '\\kdquiz_number_questions_field',
-        'kd-quiz-settings',
+        'kdquiz-settings',
         'kdquiz_settings_general_section'
     );
 
@@ -113,7 +113,7 @@ add_action('admin_init', function () {
         'kdquiz_card_style',
         __('Card Style', 'kd-quiz'),
         __NAMESPACE__ . '\\kdquiz_card_style_field',
-        'kd-quiz-settings',
+        'kdquiz-settings',
         'kdquiz_settings_general_section'
     );
 
@@ -121,7 +121,7 @@ add_action('admin_init', function () {
         'kdquiz_enable_auto_insert',
         __('Enable Automatic Quiz Insertion', 'kd-quiz'),
         __NAMESPACE__ . '\\kdquiz_enable_auto_insert_field',
-        'kd-quiz-settings',
+        'kdquiz-settings',
         'kdquiz_settings_general_section'
     );
 
@@ -129,7 +129,7 @@ add_action('admin_init', function () {
         'kdquiz_heading_selector',
         __('Heading Selector', 'kd-quiz'),
         __NAMESPACE__ . '\\kdquiz_heading_selector_field',
-        'kd-quiz-settings',
+        'kdquiz-settings',
         'kdquiz_settings_general_section'
     );
 
@@ -137,7 +137,7 @@ add_action('admin_init', function () {
         'kdquiz_heading_match',
         __('Heading Match Pattern', 'kd-quiz'),
         __NAMESPACE__ . '\\kdquiz_heading_match_field',
-        'kd-quiz-settings',
+        'kdquiz-settings',
         'kdquiz_settings_general_section'
     );
 
@@ -145,7 +145,7 @@ add_action('admin_init', function () {
         'kdquiz_min_distance',
         __('Minimum Distance from Top (%)', 'kd-quiz'),
         __NAMESPACE__ . '\\kdquiz_min_distance_field',
-        'kd-quiz-settings',
+        'kdquiz-settings',
         'kdquiz_settings_general_section'
     );
 
@@ -153,7 +153,7 @@ add_action('admin_init', function () {
         'kdquiz_settings_text_section',
         __('Text Replacements', 'kd-quiz'),
         null,
-        'kd-quiz-settings'
+        'kdquiz-settings'
     );
 
     foreach (Shared::getInstance()->getStrings() as $string) {
@@ -170,32 +170,61 @@ add_action('admin_init', function () {
                     esc_attr($option)
                 );
             },
-            'kd-quiz-settings',
+            'kdquiz-settings',
             'kdquiz_settings_text_section'
         );
     }
 
-    if (isset($_POST['kdquiz_action']) && 'reset_quiz_stats' === sanitize_key(wp_unslash($_POST['kdquiz_action'] ?? ''))) {
-        if (!isset($_POST['kdquiz_reset_stats_nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['kdquiz_reset_stats_nonce'])), 'kdquiz_reset_stats_action')) {
-            wp_die(esc_html__('Security check failed. Please try again.', 'kd-quiz'));
-        }
+}
 
-        if (!current_user_can('manage_options')) {
-            wp_die(esc_html__('You do not have sufficient permissions to access this page.', 'kd-quiz'));
-        }
+add_action('admin_init', __NAMESPACE__ . '\\kdquiz_register_settings');
 
-        // Nukes the counters so editors can start A/B tests fresh.
-        kdquiz_reset_all_stats();
-
-        add_action('admin_notices', function () {
-            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Quiz stats have been reset.', 'kd-quiz') . '</p></div>';
-        });
+function kdquiz_handle_reset_stats() {
+    if (!current_user_can('manage_options')) {
+        wp_die(esc_html__('You do not have sufficient permissions to access this page.', 'kd-quiz'));
     }
-});
+
+    check_admin_referer('kdquiz_reset_stats_action', 'kdquiz_reset_stats_nonce');
+
+    // Nukes the counters so editors can start A/B tests fresh.
+    kdquiz_reset_all_stats();
+
+    $redirect_url = add_query_arg(
+        [
+            'page'                    => 'kdquiz-settings',
+            'kdquiz_reset_stats_done' => 1,
+        ],
+        admin_url('admin.php')
+    );
+
+    wp_safe_redirect($redirect_url);
+    exit;
+}
+
+add_action('admin_post_kdquiz_reset_stats', __NAMESPACE__ . '\\kdquiz_handle_reset_stats');
+
+function kdquiz_maybe_render_reset_notice() {
+    if (!isset($_GET['kdquiz_reset_stats_done'])) {
+        return;
+    }
+
+    $page = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '';
+    if ('kdquiz-settings' !== $page) {
+        return;
+    }
+
+    if (!current_user_can('manage_options')) {
+        return;
+    }
+
+    echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Quiz stats have been reset.', 'kd-quiz') . '</p></div>';
+}
+
+add_action('admin_notices', __NAMESPACE__ . '\\kdquiz_maybe_render_reset_notice');
 
 function kdquiz_reset_all_stats() {
     $questions = get_posts([
-        'post_type'      => 'kd_quiz_question',
+        'post_type'      => ['kdquiz_question', 'kd_quiz_question'],
         'posts_per_page' => -1,
         'fields'         => 'ids',
     ]);
@@ -220,7 +249,7 @@ function kdquiz_number_questions_field() {
 
 function kdquiz_card_style_field() {
     $styles = kdquiz_get_quiz_styles();
-    $current_value = get_option('kdquiz_card_style', 'kd_quiz_style_1');
+    $current_value = get_option('kdquiz_card_style', 'kdquiz_style_1');
 
     echo '<select name="' . esc_attr('kdquiz_card_style') . '">';
     foreach ($styles as $id => $name) {

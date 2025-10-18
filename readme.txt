@@ -25,11 +25,11 @@ All user inputs are sanitized, escaped, and routed through WordPress nonces to p
 2. Activate **KD Quiz – Interactive Quiz** through the **Plugins** menu.
 3. Visit **Quiz Questions → Add New Question** to create your first question and mark the correct answer.
 4. Configure global behaviour under **Quiz Questions → Settings** (question count, styles, auto-insert rules, and text replacements).
-5. Place the `[kd-quiz]` shortcode in any post or page, or enable automatic insertion to let the plugin place quizzes after targeted headings.
+5. Place the `[kdquiz]` shortcode in any post or page, or enable automatic insertion to let the plugin place quizzes after targeted headings.
 
 == Frequently Asked Questions ==
 = How do I change the quiz styling? =
-Use **Quiz Questions → Settings** to pick one of the bundled styles or choose **Custom** and enqueue your own CSS targeting `.kd_quiz_style_custom`.
+Use **Quiz Questions → Settings** to pick one of the bundled styles or choose **Custom** and enqueue your own CSS targeting `.kdquiz_style_custom`.
 
 = Can I import questions from another system? =
 Yes. Head to **Quiz Questions → Import Questions**, paste a JSON payload with `questionText`, `options`, `correctOptionId`, and `explanation`, then submit the form.

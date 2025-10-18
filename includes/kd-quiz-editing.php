@@ -10,7 +10,7 @@
  * License URI:       https://github.com/nkonstas/wordpress-quiz/blob/main/LICENSE
  */
 
-namespace KDQuiz;
+namespace KDQuizPlugin;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -23,25 +23,25 @@ if (!defined('ABSPATH')) {
 add_action('admin_menu', function () {
     // Slot our settings/import pages right under the CPT menu.
     add_submenu_page(
-        'edit.php?post_type=kd_quiz_question',
+        'edit.php?post_type=kdquiz_question',
         __('Quiz Settings', 'kd-quiz'),
         __('Settings', 'kd-quiz'),
         'manage_options',
-        'kd-quiz-settings',
+        'kdquiz-settings',
         __NAMESPACE__ . '\\kdquiz_settings_page'
     );
 
     add_submenu_page(
-        'edit.php?post_type=kd_quiz_question',
+        'edit.php?post_type=kdquiz_question',
         __('Import Quiz Questions', 'kd-quiz'),
         __('Import Questions', 'kd-quiz'),
         'manage_options',
-        'kd_import_quiz_questions',
+        'kdquiz-import-questions',
         __NAMESPACE__ . '\\kdquiz_import_questions_page'
     );
 });
 
-add_action('init', function () {
+function kdquiz_register_question_post_type() {
     global $kdquiz_shortcode_used;
     $kdquiz_shortcode_used = false;
 
@@ -71,8 +71,31 @@ add_action('init', function () {
         'rewrite'            => false,
     ];
 
-    register_post_type('kd_quiz_question', $args);
-});
+    register_post_type('kdquiz_question', $args);
+}
+
+add_action('init', __NAMESPACE__ . '\\kdquiz_register_question_post_type');
+
+function kdquiz_migrate_legacy_post_type() {
+    if (get_option('kdquiz_post_type_migrated')) {
+        return;
+    }
+
+    global $wpdb;
+    $updated = $wpdb->update(
+        $wpdb->posts,
+        ['post_type' => 'kdquiz_question'],
+        ['post_type' => 'kd_quiz_question']
+    );
+
+    if (false === $updated) {
+        return;
+    }
+
+    update_option('kdquiz_post_type_migrated', 1);
+}
+
+add_action('init', __NAMESPACE__ . '\\kdquiz_migrate_legacy_post_type', 11);
 
 add_action('admin_enqueue_scripts', function () {
     // Enqueue only the admin CSS; there is no admin JS at present.
@@ -85,12 +108,12 @@ add_action('admin_enqueue_scripts', function () {
     wp_enqueue_style('kdquiz-admin-quiz-style', $style_url, [], $style_version ?: null);
 });
 
-add_filter('manage_kd_quiz_question_posts_columns', function ($columns) {
+add_filter('manage_kdquiz_question_posts_columns', function ($columns) {
     $columns['kdquiz_correct_answer'] = __('Correct Answer', 'kd-quiz');
     return $columns;
 });
 
-add_action('manage_kd_quiz_question_posts_custom_column', function ($column, $post_id) {
+add_action('manage_kdquiz_question_posts_custom_column', function ($column, $post_id) {
     if ('kdquiz_correct_answer' !== $column) {
         return;
     }
@@ -111,7 +134,7 @@ add_action('add_meta_boxes', function () {
         'kdquiz_questions_meta_box',
         __('Quiz Question Details', 'kd-quiz'),
         __NAMESPACE__ . '\\kdquiz_display_meta_box',
-        'kd_quiz_question'
+        'kdquiz_question'
     );
 });
 
@@ -150,7 +173,7 @@ function kdquiz_display_meta_box($post) {
     );
 }
 
-add_action('save_post_kd_quiz_question', function ($post_id) {
+add_action('save_post_kdquiz_question', function ($post_id) {
     if (!isset($_POST['kdquiz_question_nonce'])) {
         return;
     }
@@ -190,13 +213,13 @@ add_action('save_post_kd_quiz_question', function ($post_id) {
     }
 });
 
-add_filter('manage_kd_quiz_question_posts_columns', function ($columns) {
+add_filter('manage_kdquiz_question_posts_columns', function ($columns) {
     $columns['kdquiz_stats_engagement']    = __('Engagement', 'kd-quiz');
     $columns['kdquiz_stats_average_score'] = __('Average Score', 'kd-quiz');
     return $columns;
 });
 
-add_action('manage_kd_quiz_question_posts_custom_column', function ($column, $question_id) {
+add_action('manage_kdquiz_question_posts_custom_column', function ($column, $question_id) {
     if ('kdquiz_stats_engagement' === $column) {
         $views        = (int) get_post_meta($question_id, 'kdquiz_stats_view_count', true);
         $views        = max(0, $views);
@@ -244,7 +267,7 @@ add_action('manage_kd_quiz_question_posts_custom_column', function ($column, $qu
     }
 }, 10, 2);
 
-add_filter('manage_edit-kd_quiz_question_sortable_columns', function ($columns) {
+add_filter('manage_edit-kdquiz_question_sortable_columns', function ($columns) {
     $columns['kdquiz_stats_engagement']    = 'kdquiz_stats_engagement';
     $columns['kdquiz_stats_average_score'] = 'kdquiz_stats_average_score';
     return $columns;

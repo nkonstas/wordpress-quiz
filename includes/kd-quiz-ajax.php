@@ -10,7 +10,7 @@
  * License URI:       https://github.com/nkonstas/wordpress-quiz/blob/main/LICENSE
  */
 
-namespace KDQuiz;
+namespace KDQuizPlugin;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -38,8 +38,8 @@ function kdquiz_update_question_stats($question_id) {
     update_post_meta($question_id, 'kdquiz_stats_average_score', $average_score);
 }
 
-add_action('wp_ajax_kd_fetch_random_questions', __NAMESPACE__ . '\\kdquiz_fetch_random_questions');
-add_action('wp_ajax_nopriv_kd_fetch_random_questions', __NAMESPACE__ . '\\kdquiz_fetch_random_questions');
+add_action('wp_ajax_kdquiz_fetch_random_questions', __NAMESPACE__ . '\\kdquiz_fetch_random_questions');
+add_action('wp_ajax_nopriv_kdquiz_fetch_random_questions', __NAMESPACE__ . '\\kdquiz_fetch_random_questions');
 
 function kdquiz_fetch_random_questions() {
     check_ajax_referer('kdquiz_ajax_nonce', 'nonce');
@@ -63,7 +63,7 @@ function kdquiz_fetch_random_questions() {
     $fetch_count = min($fetch_count, 50);
 
     $batch = get_posts([
-        'post_type'      => 'kd_quiz_question',
+        'post_type'      => ['kdquiz_question', 'kd_quiz_question'],
         'posts_per_page' => $fetch_count,
         'orderby'        => 'rand',
     ]);
@@ -88,7 +88,7 @@ function kdquiz_fetch_random_questions() {
     $tries = 0;
     while (count($questions) < $number_of_questions && $tries < 3) {
         $extra = get_posts([
-            'post_type'      => 'kd_quiz_question',
+            'post_type'      => ['kdquiz_question', 'kd_quiz_question'],
             'posts_per_page' => ($number_of_questions - count($questions)) * 2,
             'orderby'        => 'rand',
         ]);
@@ -114,7 +114,7 @@ function kdquiz_fetch_random_questions() {
     if (count($questions) < $number_of_questions) {
         $needed = $number_of_questions - count($questions);
         $filler = get_posts([
-            'post_type'      => 'kd_quiz_question',
+            'post_type'      => ['kdquiz_question', 'kd_quiz_question'],
             'posts_per_page' => $needed * 2,
             'orderby'        => 'rand',
         ]);
@@ -156,14 +156,15 @@ function kdquiz_fetch_random_questions() {
     wp_send_json_success($data);
 }
 
-add_action('wp_ajax_kd_increment_view_count', __NAMESPACE__ . '\\kdquiz_increment_view_count');
-add_action('wp_ajax_nopriv_kd_increment_view_count', __NAMESPACE__ . '\\kdquiz_increment_view_count');
+add_action('wp_ajax_kdquiz_increment_view_count', __NAMESPACE__ . '\\kdquiz_increment_view_count');
+add_action('wp_ajax_nopriv_kdquiz_increment_view_count', __NAMESPACE__ . '\\kdquiz_increment_view_count');
 
 function kdquiz_increment_view_count() {
     check_ajax_referer('kdquiz_ajax_nonce', 'nonce');
 
     $question_id = isset($_POST['question_id']) ? absint(wp_unslash($_POST['question_id'])) : 0;
-    if ($question_id && get_post_type($question_id) === 'kd_quiz_question') {
+    $post_type = $question_id ? get_post_type($question_id) : '';
+    if ($question_id && in_array($post_type, ['kdquiz_question', 'kd_quiz_question'], true)) {
         // Views only ever increment; defensively guard against negative values.
         $views = (int) get_post_meta($question_id, 'kdquiz_stats_view_count', true);
         $views = max(0, $views);
@@ -174,8 +175,8 @@ function kdquiz_increment_view_count() {
     wp_send_json_success();
 }
 
-add_action('wp_ajax_kd_record_answer', __NAMESPACE__ . '\\kdquiz_record_answer');
-add_action('wp_ajax_nopriv_kd_record_answer', __NAMESPACE__ . '\\kdquiz_record_answer');
+add_action('wp_ajax_kdquiz_record_answer', __NAMESPACE__ . '\\kdquiz_record_answer');
+add_action('wp_ajax_nopriv_kdquiz_record_answer', __NAMESPACE__ . '\\kdquiz_record_answer');
 
 function kdquiz_record_answer() {
     check_ajax_referer('kdquiz_ajax_nonce', 'nonce');
@@ -184,7 +185,8 @@ function kdquiz_record_answer() {
     $is_correct_raw = isset($_POST['is_correct']) ? sanitize_text_field(wp_unslash($_POST['is_correct'])) : '';
     $is_correct  = function_exists('wp_validate_boolean') ? wp_validate_boolean($is_correct_raw) : rest_sanitize_boolean($is_correct_raw);
 
-    if ($question_id && get_post_type($question_id) === 'kd_quiz_question') {
+    $post_type = $question_id ? get_post_type($question_id) : '';
+    if ($question_id && in_array($post_type, ['kdquiz_question', 'kd_quiz_question'], true)) {
         if ($is_correct) {
             // Increment the correct tally and warm the derived stats cache.
             $correct = (int) get_post_meta($question_id, 'kdquiz_stats_correct_count', true);

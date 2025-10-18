@@ -22,7 +22,7 @@ class kdQuiz {
   createQuizElement() {
     // Create the main quiz card container
     this.quizElement = document.createElement("div");
-    this.quizElement.className = "kd-quiz-card " + this.styleName;
+    this.quizElement.className = "kdquiz-card " + this.styleName;
     this.quizElement.setAttribute("itemscope", "");
     this.quizElement.setAttribute(
       "itemtype",
@@ -53,7 +53,7 @@ class kdQuiz {
 
     // Create the inner container for flipping effect
     this.cardInner = document.createElement("div");
-    this.cardInner.className = "kd-card-inner";
+    this.cardInner.className = "kdquiz-card-inner";
 
     // Create the front and back faces (initially empty)
     this.cardFront = this.createCardFace("front");
@@ -72,7 +72,7 @@ class kdQuiz {
 
   createCardFace(faceType) {
     const face = document.createElement("div");
-    face.className = `kd-card-face kd-card-${faceType}`;
+    face.className = `kdquiz-card-face kdquiz-card-${faceType}`;
     return face;
   }
 
@@ -84,7 +84,7 @@ class kdQuiz {
     this.updateFrontFace();
 
     // Reset the flip state
-    this.quizElement.classList.remove("kd-flipped");
+    this.quizElement.classList.remove("kdquiz-flipped");
 
     this.recordViewedQuestion(this.questionData.questionId);
     this.incrementQuestionViewCount(this.questionData.questionId);
@@ -115,7 +115,7 @@ class kdQuiz {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
-        action: "kd_increment_view_count",
+        action: "kdquiz_increment_view_count",
         nonce: kdQuizAjax.nonce,
         question_id: questionId
       })
@@ -136,7 +136,7 @@ class kdQuiz {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
-        action: "kd_record_answer",
+        action: "kdquiz_record_answer",
         nonce: kdQuizAjax.nonce,
         question_id: questionId,
         is_correct: isCorrect,
@@ -156,15 +156,15 @@ class kdQuiz {
     this.cardFront.innerHTML = "";
 
     const questionText = document.createElement("p");
-    questionText.className = "kd-question";
+    questionText.className = "kdquiz-question";
     questionText.textContent = this.questionData.questionText;
 
     const optionsList = document.createElement("ul");
-    optionsList.className = "kd-options";
+    optionsList.className = "kdquiz-options";
 
     this.questionData.options.forEach((option, index) => {
       const optionItem = document.createElement("li");
-      optionItem.className = "kd-option";
+      optionItem.className = "kdquiz-option";
       optionItem.textContent = option.optionText;
       optionsList.appendChild(optionItem);
 
@@ -177,7 +177,7 @@ class kdQuiz {
           this.correctAnswersCount++;
         }
         this.updateBackFace();
-        this.quizElement.classList.add("kd-flipped");
+        this.quizElement.classList.add("kdquiz-flipped");
         this.recordQuizAnswer(
           this.questionData.questionId,
           this.isAnswerCorrect
@@ -195,19 +195,19 @@ class kdQuiz {
   }
 
   showAnswerExplanation() {
-    const cardBack = this.quizElement.querySelector(".kd-card-back");
+    const cardBack = this.quizElement.querySelector(".kdquiz-card-back");
     cardBack.innerHTML = ""; // Clear previous content
 
     const feedbackText = document.createElement("p");
     feedbackText.className = this.isAnswerCorrect
-      ? "kd-correct"
-      : "kd-incorrect";
+      ? "kdquiz-correct"
+      : "kdquiz-incorrect";
     feedbackText.innerHTML = this.isAnswerCorrect
-      ? '<span class="kd-answer-icon"></span>' + kdQuizAjax.text_correct_answer
-      : '<span class="kd-answer-icon"></span>' + kdQuizAjax.text_wrong_answer;
+      ? '<span class="kdquiz-answer-icon"></span>' + kdQuizAjax.text_correct_answer
+      : '<span class="kdquiz-answer-icon"></span>' + kdQuizAjax.text_wrong_answer;
 
     const explanationText = document.createElement("p");
-    explanationText.className = "kd-answer";
+    explanationText.className = "kdquiz-answer";
     explanationText.textContent = this.questionData.explanation;
 
     cardBack.appendChild(feedbackText);
@@ -216,14 +216,14 @@ class kdQuiz {
 
   showNextButton() {
     const nextButton = document.createElement("button");
-    nextButton.className = "kd-action";
+    nextButton.className = "kdquiz-action";
 
     if (this.currentQuestionIndex < this.questionsData.length - 1) {
       nextButton.textContent = kdQuizAjax.text_next_question_raw;
       nextButton.addEventListener("click", () => {
         this.currentQuestionIndex++;
         this.loadQuestion();
-        this.quizElement.classList.remove("kd-flipped");
+        this.quizElement.classList.remove("kdquiz-flipped");
       });
     } else {
       nextButton.textContent = kdQuizAjax.text_next_view_score_raw;
@@ -232,11 +232,11 @@ class kdQuiz {
           this.correctAnswersCount,
           this.questionsData.length
         );
-        this.quizElement.classList.remove("kd-flipped");
+        this.quizElement.classList.remove("kdquiz-flipped");
       });
     }
 
-    const cardBack = this.quizElement.querySelector(".kd-card-back");
+    const cardBack = this.quizElement.querySelector(".kdquiz-card-back");
     cardBack.appendChild(nextButton);
   }
 
@@ -256,33 +256,33 @@ class kdQuiz {
     let feedbackMessage;
     switch (grade) {
       case "A":
-        gradeClass = "kd-final-a";
-        gradeText = kdQuizAjax.kd_quiz_text_score_grade_a;
-        feedbackMessage = kdQuizAjax.kd_quiz_text_score_grade_a_message;
+        gradeClass = "kdquiz-final-a";
+        gradeText = kdQuizAjax.kdquiz_text_score_grade_a;
+        feedbackMessage = kdQuizAjax.kdquiz_text_score_grade_a_message;
         break;
       case "B":
-        gradeClass = "kd-final-b";
-        gradeText = kdQuizAjax.kd_quiz_text_score_grade_b;
-        feedbackMessage = kdQuizAjax.kd_quiz_text_score_grade_b_message;
+        gradeClass = "kdquiz-final-b";
+        gradeText = kdQuizAjax.kdquiz_text_score_grade_b;
+        feedbackMessage = kdQuizAjax.kdquiz_text_score_grade_b_message;
         break;
       default:
       case "C":
-        gradeClass = "kd-final-c";
-        gradeText = kdQuizAjax.kd_quiz_text_score_grade_c;
-        feedbackMessage = kdQuizAjax.kd_quiz_text_score_grade_c_message;
+        gradeClass = "kdquiz-final-c";
+        gradeText = kdQuizAjax.kdquiz_text_score_grade_c;
+        feedbackMessage = kdQuizAjax.kdquiz_text_score_grade_c_message;
         break;
       case "F":
-        gradeClass = "kd-final-f";
-        gradeText = kdQuizAjax.kd_quiz_text_score_grade_f;
-        feedbackMessage = kdQuizAjax.kd_quiz_text_score_grade_f_message;
+        gradeClass = "kdquiz-final-f";
+        gradeText = kdQuizAjax.kdquiz_text_score_grade_f;
+        feedbackMessage = kdQuizAjax.kdquiz_text_score_grade_f_message;
         break;
     }
 
     this.cardFront.innerHTML = `
         <div class="${gradeClass}">
-        <p class="kd-final-grade">${kdQuizAjax.kd_quiz_text_score_grade} <span>${gradeText}</span></p>
-        <p class="kd-final-score">${kdQuizAjax.kd_quiz_text_score_percentage} ${scorePercentage.toFixed(0)}%</p>
-        <p class="kd-final-message">${feedbackMessage}</p>
+        <p class="kdquiz-final-grade">${kdQuizAjax.kdquiz_text_score_grade} <span>${gradeText}</span></p>
+        <p class="kdquiz-final-score">${kdQuizAjax.kdquiz_text_score_percentage} ${scorePercentage.toFixed(0)}%</p>
+        <p class="kdquiz-final-message">${feedbackMessage}</p>
         </div>`;
   }
 
@@ -355,7 +355,7 @@ class kdQuizMgr {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
-        action: "kd_fetch_random_questions",
+        action: "kdquiz_fetch_random_questions",
         number: kdQuizAjax.questions,
         nonce: kdQuizAjax.nonce,
         viewed_questions: viewedQuestions,
