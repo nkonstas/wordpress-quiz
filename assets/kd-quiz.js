@@ -35,7 +35,7 @@ class kdQuiz {
       "description",
       "Allows you to create a simple interactive quiz on any page or post, requires Wordpress"
     );
-    this.createMeta(this.quizElement, "softwareVersion", "1.3.1");
+    this.createMeta(this.quizElement, "softwareVersion", "1.3.2");
     this.createMeta(this.quizElement, "operatingSystem", "Web/Wordpress");
 
     const authorDiv = document.createElement("div");

@@ -3,7 +3,7 @@ Contributors: nkonstas
 Tags: quiz, education, engagement, shortcode, ajax
 Requires at least: 5.4
 Tested up to: 6.8
-Stable tag: 1.3.1
+Stable tag: 1.3.2
 Requires PHP: 7.2
 License: GPLv3 or later
 License URI: https://github.com/nkonstas/wordpress-quiz/blob/main/LICENSE
@@ -43,8 +43,12 @@ No. The plugin stores aggregate view and answer counts per question only.
 3. Import a batch of questions from JSON.
 4. Front-end quiz card with score summary.
 
-= 1.3.1 =
 == Changelog ==
+= 1.3.2 =
+* Refreshes the Edit Question admin UI with a clear “Mark as correct” pill and row highlight so the chosen answer stands out.
+* Adds helper text and status chips to reinforce which answer will be saved as correct.
+* Rebuilds admin styles and the bundled JavaScript for the 1.3.2 release package.
+
 = 1.3.1 =
 * Improves the JSON import UX by redirecting back to the import screen with contextual error messaging when the payload is missing or invalid.
 * Adds nonce-protected status flags so both success and error notices render in the proper admin screens.
@@ -73,6 +77,9 @@ No. The plugin stores aggregate view and answer counts per question only.
 * Refreshed readme to pass the WordPress.org validator and declared testing up to WordPress 6.5.
 
 == Upgrade Notice ==
+= 1.3.2 =
+Update for a clearer “Mark as correct” workflow inside the question editor, plus refreshed admin styling.
+
 = 1.3.1 =
 Maintenance release focused on the JSON importer UX: failed imports now return you to the admin screen with clear messaging, plus refreshed assets.
 

@@ -143,25 +143,72 @@ function kdquiz_display_meta_box($post) {
 
     $correct_answer = get_post_meta($post->ID, 'kdquiz_correct_answer', true);
 
+    echo '<fieldset class="kdquiz-answer-group">';
+    echo '<legend>' . esc_html__('Answers', 'kd-quiz') . '</legend>';
+    echo '<p class="description kdquiz-answer-helper">' . esc_html__('Select one option below as the correct answer, then enter the answer text.', 'kd-quiz') . '</p>';
+
+    $active_status_text = esc_html__('Correct choice', 'kd-quiz');
+
     for ($i = 0; $i < 4; $i++) {
         $answer_text = get_post_meta($post->ID, 'kdquiz_answer_' . $i, true);
         // translators: %d is the answer number shown to editors (1–4).
         $label       = sprintf(__('Answer %d:', 'kd-quiz'), $i + 1);
 
-        // Radio buttons let the editor pick the right answer inline.
-        printf('<label for="%1$s">%2$s</label> ', esc_attr('kdquiz_answer_' . $i), esc_html($label));
+        $answer_id   = 'kdquiz_answer_' . $i;
+        $radio_id    = 'kdquiz_correct_answer_' . $i;
+        $row_classes = 'kdquiz-answer-row';
+
+        if ((int) $correct_answer === $i) {
+            $row_classes .= ' is-selected';
+        }
+
+        printf('<div class="%s">', esc_attr($row_classes));
+
+        echo '<div class="kdquiz-answer-select">';
         printf(
-            '<input type="radio" name="%1$s" value="%2$d" %3$s /> ',
+            '<input type="radio" class="kdquiz-answer-radio" id="%1$s" name="%2$s" value="%3$d" %4$s />',
+            esc_attr($radio_id),
             esc_attr('kdquiz_correct_answer'),
             esc_attr($i),
             checked((int) $correct_answer, $i, false)
         );
         printf(
-            '<input type="text" id="%1$s" name="%1$s" value="%2$s" size="25" /><br><br>',
-            esc_attr('kdquiz_answer_' . $i),
+            '<label for="%1$s" class="kdquiz-answer-toggle-label">%2$s</label>',
+            esc_attr($radio_id),
+            esc_html__('Mark as correct', 'kd-quiz')
+        );
+
+        $status_attributes = [
+            'class="kdquiz-answer-status"',
+            'data-active-text="' . esc_attr($active_status_text) . '"',
+        ];
+
+        if ((int) $correct_answer === $i) {
+            $status_attributes[] = 'role="status"';
+            printf('<span %1$s>%2$s</span>', implode(' ', $status_attributes), $active_status_text);
+        } else {
+            $status_attributes[] = 'aria-hidden="true"';
+            printf('<span %s></span>', implode(' ', $status_attributes));
+        }
+        echo '</div>';
+
+        echo '<div class="kdquiz-answer-fields">';
+        printf(
+            '<label class="kdquiz-answer-input-label" for="%1$s">%2$s</label>',
+            esc_attr($answer_id),
+            esc_html($label)
+        );
+        printf(
+            '<input type="text" id="%1$s" name="%1$s" value="%2$s" size="25" />',
+            esc_attr($answer_id),
             esc_attr($answer_text)
         );
+        echo '</div>';
+
+        echo '</div>';
     }
+
+    echo '</fieldset>';
 
     $explanation = get_post_meta($post->ID, 'kdquiz_explanation', true);
 
@@ -212,6 +259,71 @@ add_action('save_post_kdquiz_question', function ($post_id) {
         update_post_meta($post_id, 'kdquiz_explanation', $explanation);
     }
 });
+
+add_action('admin_print_footer_scripts-post.php', __NAMESPACE__ . '\\kdquiz_render_admin_answer_script');
+add_action('admin_print_footer_scripts-post-new.php', __NAMESPACE__ . '\\kdquiz_render_admin_answer_script');
+
+/**
+ * Injects a lightweight script that keeps the answer rows in sync with the selected radio button.
+ */
+function kdquiz_render_admin_answer_script() {
+    global $post_type;
+
+    if ('kdquiz_question' !== $post_type) {
+        return;
+    }
+    ?>
+    <script>
+    (function () {
+        function initKdQuizAdminAnswers() {
+        var answerRows = Array.prototype.slice.call(document.querySelectorAll('.kdquiz-answer-row'));
+        if (!answerRows.length) {
+            return;
+        }
+
+        function syncAnswerState() {
+            var selected = document.querySelector('.kdquiz-answer-radio:checked');
+            answerRows.forEach(function (row) {
+                var radio = row.querySelector('.kdquiz-answer-radio');
+                var status = row.querySelector('.kdquiz-answer-status');
+                var isSelected = radio === selected;
+
+                row.classList.toggle('is-selected', Boolean(isSelected));
+
+                if (!status) {
+                    return;
+                }
+
+                var activeText = status.getAttribute('data-active-text') || '';
+                if (isSelected) {
+                    status.textContent = activeText;
+                    status.removeAttribute('aria-hidden');
+                    status.setAttribute('role', 'status');
+                } else {
+                    status.textContent = '';
+                    status.setAttribute('aria-hidden', 'true');
+                    status.removeAttribute('role');
+                }
+            });
+        }
+
+        var radios = Array.prototype.slice.call(document.querySelectorAll('.kdquiz-answer-radio'));
+        radios.forEach(function (radio) {
+            radio.addEventListener('change', syncAnswerState);
+        });
+
+        syncAnswerState();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initKdQuizAdminAnswers);
+        } else {
+            initKdQuizAdminAnswers();
+        }
+    })();
+    </script>
+    <?php
+}
 
 add_filter('manage_kdquiz_question_posts_columns', function ($columns) {
     $columns['kdquiz_stats_engagement']    = __('Engagement', 'kd-quiz');
