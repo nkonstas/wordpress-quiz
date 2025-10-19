@@ -295,54 +295,122 @@ class kdQuizMgr {
   }
 
   init() {
+    if (typeof kdQuizAjax !== "undefined" && kdQuizAjax.debug_auto_insert) {
+      console.log("[kdquiz] configuration", kdQuizAjax);
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
       const selectors = [kdQuizAjax.element_selector].filter(Boolean);
       if (kdQuizAjax.legacy_element_selector) {
         selectors.push(kdQuizAjax.legacy_element_selector);
       }
 
+      if (kdQuizAjax.debug_auto_insert) {
+        console.log("[kdquiz] auto insert bootstrap", {
+          elementSelector: kdQuizAjax.element_selector,
+          legacySelector: kdQuizAjax.legacy_element_selector,
+          autoInsertEnabled: !!kdQuizAjax.auto_insert_enabled,
+          containerSelector: kdQuizAjax.container_selector,
+          headingSelector: kdQuizAjax.heading_selector,
+          headingMatch: kdQuizAjax.heading_match,
+          minDistancePx: kdQuizAjax.min_distance,
+        });
+      }
+
       const quizElements = document.querySelectorAll(selectors.join(", "));
 
       if (quizElements.length === 0 && kdQuizAjax.auto_insert_enabled) {
-        const minDistanceFromTop =
-          window.innerHeight * (kdQuizAjax.min_distance / 100);
-        const targetHeadings = document.querySelectorAll(
-          kdQuizAjax.heading_selector
+        const containerSelector = (kdQuizAjax.container_selector || "").trim();
+        const minDistancePx = Math.max(
+          0,
+          parseInt(kdQuizAjax.min_distance, 10) || 0
         );
 
-        // Convert the Heading Match Pattern to a Regular Expression
         const headingMatchPattern = kdQuizAjax.heading_match.trim();
         let headingMatchRegex = null;
         if (headingMatchPattern) {
-          // Escape special characters and replace '*' with '.*' for wildcard matching
           const escapedPattern = headingMatchPattern
             .replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&")
             .replace(/\*/g, ".*");
-          headingMatchRegex = new RegExp(escapedPattern, "i"); // Case insensitive
+          headingMatchRegex = new RegExp(escapedPattern, "i");
         }
 
-        // Iterate through each target heading
-        for (let heading of targetHeadings) {
-          // Get vertical distance of the heading from the top
-          const distanceFromTop =
-            heading.getBoundingClientRect().top + window.scrollY;
+        const containers = containerSelector
+          ? Array.from(document.querySelectorAll(containerSelector))
+          : [document.body];
 
-          // Check if distance is greater than or equal to minDistanceFromTop
-          if (
-            distanceFromTop >= minDistanceFromTop &&
-            (!headingMatchRegex || headingMatchRegex.test(heading.textContent))
-          ) {
-            // Create a new div and insert it before the heading
-            const newDiv = document.createElement("div");
-            newDiv.id = kdQuizAjax.element_selector.replace("#", ""); // Assuming element_selector is an ID
-            newDiv.className = "kdquiz-container kd-quiz-container";
-            heading.parentNode.insertBefore(newDiv, heading);
-
-            // Fetch questions and create quiz in the new div
-            this.fetchQuestionsAndCreateQuiz(newDiv);
-            break; // Exit loop after inserting the quiz
+        if (!containers.length) {
+          if (kdQuizAjax.debug_auto_insert) {
+            console.warn(
+              "[kdquiz] no containers matched selector, aborting auto insert",
+              containerSelector
+            );
           }
+          return;
         }
+
+        const container = containers[0];
+        if (kdQuizAjax.debug_auto_insert) {
+          console.log("[kdquiz] evaluating container", containerSelector || "(document.body)", {
+            container,
+            headingSelector: kdQuizAjax.heading_selector,
+          });
+        }
+
+        const containerTop =
+          container.getBoundingClientRect().top + window.scrollY;
+        const candidates = Array.from(
+          container.querySelectorAll(kdQuizAjax.heading_selector)
+        );
+
+        let insertionHeading = null;
+        candidates.forEach((heading, index) => {
+          const headingTop = heading.getBoundingClientRect().top + window.scrollY;
+          const relativeTop = headingTop - containerTop;
+          const matchesPattern =
+            !headingMatchRegex || headingMatchRegex.test(heading.textContent);
+
+          if (kdQuizAjax.debug_auto_insert) {
+            console.log("[kdquiz] evaluating heading", {
+              index,
+              text: heading.textContent.trim(),
+              containerTop: Math.round(containerTop),
+              headingTop: Math.round(headingTop),
+              relativeTop: Math.round(relativeTop),
+              minDistancePx,
+              matchesPattern,
+            });
+          }
+
+          if (!insertionHeading && relativeTop >= minDistancePx && matchesPattern) {
+            insertionHeading = heading;
+          }
+        });
+
+        if (!insertionHeading) {
+          if (kdQuizAjax.debug_auto_insert) {
+            console.warn("[kdquiz] auto insert aborted, no headings satisfied offset/pattern", {
+              totalCandidates: candidates.length,
+              minDistancePx,
+              headingMatch: headingMatchPattern || "(none)",
+            });
+          }
+          return;
+        }
+
+        if (kdQuizAjax.debug_auto_insert) {
+          console.log("[kdquiz] auto insert target found", {
+            headingText: insertionHeading.textContent.trim(),
+            minDistancePx,
+          });
+        }
+
+        const newDiv = document.createElement("div");
+        newDiv.id = kdQuizAjax.element_selector.replace("#", "");
+        newDiv.className = "kdquiz-container kd-quiz-container";
+        insertionHeading.parentNode.insertBefore(newDiv, insertionHeading);
+        this.fetchQuestionsAndCreateQuiz(newDiv);
+        return;
       } else if (quizElements.length > 0) {
         // If there are already quiz elements, fetch questions for the first one
         this.fetchQuestionsAndCreateQuiz(quizElements[0]);

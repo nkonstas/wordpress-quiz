@@ -50,6 +50,8 @@ Quality-of-life release: new JSON example in the importer, updated review checkl
 = 1.3.4 =
 * Adds an inline JSON example below the importer textarea so editors can copy the expected payload shape (`includes/kd-quiz-import.php`).
 * Adds concise help text under each Quiz Settings control so site owners know how auto-insert and styling options behave (`includes/kd-quiz-settings.php`).
+* Switches the minimum-distance control to pixels, introduces a container selector, and disables the placement fields unless auto insertion is active so automatic quizzes stay within the main content area (`includes/kd-quiz-settings.php`, `assets/kd-quiz.js`).
+* Adds a toggle to enable verbose console logging so you can trace heading selection and offsets while debugging auto placement (`includes/kd-quiz-settings.php`, `assets/kd-quiz.js`).
 * Documents all security/prefix fixes in `ReviewFixes.txt` for easy reviewer handoff (e.g. `ReviewFixes.txt:1`).
 * Rebuilds scripts and metadata so the distributed bundles advertise version 1.3.4.
 
@@ -92,7 +94,7 @@ Quality-of-life release: new JSON example in the importer, updated review checkl
 
 == Upgrade Notice ==
 = 1.3.4 =
-Quality-of-life release: new JSON example in the importer, inline quiz-setting help, updated review checklist, and rebuilt bundles for the 1.3.4 package.
+Quality-of-life release: new JSON example in the importer, inline quiz-setting help, auto-insert scoped by container with pixel distances, updated review checklist, and rebuilt bundles for the 1.3.4 package.
 
 = 1.3.3 =
 Update to align with the latest WordPress.org security review feedback and ensure migrations honour object caching.

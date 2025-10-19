@@ -55,8 +55,12 @@ add_action('wp_enqueue_scripts', function () {
     wp_enqueue_script('kdquiz-script', $script_url, [], $script_version ?: null, true);
 
     $questions = absint(get_option('kdquiz_number_questions', 5));
-    $min_distance = absint(get_option('kdquiz_min_distance', 0));
+    $min_distance = max(0, absint(get_option('kdquiz_min_distance', 0)));
+    $container_selector = get_option('kdquiz_container_selector', '.entry-content, .post-content, main');
+    $container_selector = is_string($container_selector) ? sanitize_text_field($container_selector) : '';
     $style_option = kdquiz_normalize_style_slug(get_option('kdquiz_card_style', 'kdquiz_style_1'));
+
+    $debug_auto_insert = apply_filters('kdquiz_auto_insert_debug', (int) get_option('kdquiz_enable_auto_insert_logging', 0) === 1);
 
     $replacements = [
         'ajax_url'            => admin_url('admin-ajax.php'),
@@ -68,7 +72,9 @@ add_action('wp_enqueue_scripts', function () {
         'auto_insert_enabled' => (int) get_option('kdquiz_enable_auto_insert', 0),
         'heading_selector'    => sanitize_text_field(get_option('kdquiz_heading_selector', 'h2, h3')),
         'heading_match'       => sanitize_text_field(get_option('kdquiz_heading_match', '')),
-        'min_distance'        => $min_distance >= 0 ? $min_distance : 0,
+        'min_distance'        => $min_distance,
+        'container_selector'  => $container_selector,
+        'debug_auto_insert'   => (bool) $debug_auto_insert,
     ];
 
     // Pass through the strings so the JS bundle can localise UI text without extra requests.

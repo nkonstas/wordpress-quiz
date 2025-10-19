@@ -73,15 +73,24 @@ function kdquiz_register_settings() {
             return kdquiz_normalize_style_slug($value);
         },
     ]);
-    register_setting('kdquiz_options_group', 'kdquiz_enable_auto_insert', ['sanitize_callback' => function ($value) {
-        return (int) (bool) $value;
-    }]);
+    register_setting('kdquiz_options_group', 'kdquiz_enable_auto_insert', [
+        'default'           => 0,
+        'sanitize_callback' => function ($value) {
+            return (int) (bool) $value;
+        },
+    ]);
     register_setting('kdquiz_options_group', 'kdquiz_heading_selector', ['sanitize_callback' => 'sanitize_text_field']);
     register_setting('kdquiz_options_group', 'kdquiz_heading_match', ['sanitize_callback' => 'sanitize_text_field']);
+    register_setting('kdquiz_options_group', 'kdquiz_container_selector', ['sanitize_callback' => 'sanitize_text_field']);
     register_setting('kdquiz_options_group', 'kdquiz_min_distance', ['sanitize_callback' => function ($value) {
-        $value = absint($value);
-        return ($value > 100) ? 100 : $value;
+        return max(0, absint($value));
     }]);
+    register_setting('kdquiz_options_group', 'kdquiz_enable_auto_insert_logging', [
+        'default'           => 0,
+        'sanitize_callback' => function ($value) {
+            return (int) (bool) $value;
+        },
+    ]);
 
     add_settings_section(
         'kdquiz_settings_general_section',
@@ -106,12 +115,19 @@ function kdquiz_register_settings() {
         'kdquiz_settings_general_section'
     );
 
+    add_settings_section(
+        'kdquiz_settings_auto_section',
+        __('Automatic Placement', 'kd-quiz'),
+        __NAMESPACE__ . '\\kdquiz_auto_section_description',
+        'kdquiz-settings'
+    );
+
     add_settings_field(
         'kdquiz_enable_auto_insert',
         __('Enable Automatic Quiz Insertion', 'kd-quiz'),
         __NAMESPACE__ . '\\kdquiz_enable_auto_insert_field',
         'kdquiz-settings',
-        'kdquiz_settings_general_section'
+        'kdquiz_settings_auto_section'
     );
 
     add_settings_field(
@@ -119,7 +135,7 @@ function kdquiz_register_settings() {
         __('Heading Selector', 'kd-quiz'),
         __NAMESPACE__ . '\\kdquiz_heading_selector_field',
         'kdquiz-settings',
-        'kdquiz_settings_general_section'
+        'kdquiz_settings_auto_section'
     );
 
     add_settings_field(
@@ -127,15 +143,31 @@ function kdquiz_register_settings() {
         __('Heading Match Pattern', 'kd-quiz'),
         __NAMESPACE__ . '\\kdquiz_heading_match_field',
         'kdquiz-settings',
-        'kdquiz_settings_general_section'
+        'kdquiz_settings_auto_section'
+    );
+
+    add_settings_field(
+        'kdquiz_container_selector',
+        __('Container Selector', 'kd-quiz'),
+        __NAMESPACE__ . '\\kdquiz_container_selector_field',
+        'kdquiz-settings',
+        'kdquiz_settings_auto_section'
     );
 
     add_settings_field(
         'kdquiz_min_distance',
-        __('Minimum Distance from Top (%)', 'kd-quiz'),
+        __('Minimum Distance from Top (px)', 'kd-quiz'),
         __NAMESPACE__ . '\\kdquiz_min_distance_field',
         'kdquiz-settings',
-        'kdquiz_settings_general_section'
+        'kdquiz_settings_auto_section'
+    );
+
+    add_settings_field(
+        'kdquiz_enable_auto_insert_logging',
+        __('Enable Console Logging (Debug)', 'kd-quiz'),
+        __NAMESPACE__ . '\\kdquiz_auto_logging_field',
+        'kdquiz-settings',
+        'kdquiz_settings_auto_section'
     );
 
     add_settings_section(
@@ -174,7 +206,9 @@ function kdquiz_migrate_style_option() {
 }
 
 add_action('admin_init', __NAMESPACE__ . '\\kdquiz_migrate_style_option', 5);
+add_action('admin_init', __NAMESPACE__ . '\\kdquiz_migrate_min_distance_option', 6);
 add_action('admin_init', __NAMESPACE__ . '\\kdquiz_register_settings');
+add_action('admin_enqueue_scripts', __NAMESPACE__ . '\\kdquiz_enqueue_settings_admin_assets');
 
 function kdquiz_handle_reset_stats() {
     if (!current_user_can('manage_options')) {
@@ -275,35 +309,156 @@ function kdquiz_enable_auto_insert_field() {
         esc_attr('kdquiz_enable_auto_insert'),
         checked(1, $option, false)
     );
-    echo '<p class="description">' . esc_html__('When enabled, the plugin injects a quiz container automatically instead of waiting for the `[kdquiz]` shortcode.', 'kd-quiz') . '</p>';
+    echo '<p class="description">' . esc_html__('When enabled, the plugin injects a quiz container automatically inside the selected content container instead of waiting for the `[kdquiz]` shortcode. Additional placement controls unlock once this is checked.', 'kd-quiz') . '</p>';
+}
+function kdquiz_auto_section_description() {
+    $message = __('Automatically insert the quiz before specific headings inside your chosen content wrapper.', 'kd-quiz');
+    echo '<p>' . esc_html($message) . '</p>';
 }
 
 function kdquiz_heading_selector_field() {
     $option = get_option('kdquiz_heading_selector', 'h2, h3');
+    $enabled = (int) get_option('kdquiz_enable_auto_insert', 0) === 1;
+    $disabled_attr = $enabled ? '' : ' disabled="disabled"';
     printf(
-        '<input type="text" name="%1$s" value="%2$s" />',
+        '<input type="text" class="regular-text kdquiz-auto-setting" name="%1$s" value="%2$s"%3$s />',
         esc_attr('kdquiz_heading_selector'),
-        esc_attr($option)
+        esc_attr($option),
+        $disabled_attr
     );
-    echo '<p class="description">' . esc_html__('CSS selector list used to scan the post content for eligible headings when auto insert is on (e.g. `h2, h3`).', 'kd-quiz') . '</p>';
+    $base_message = __('CSS selector list used to scan the post content for eligible headings when auto insert is on (e.g. `h2, h3`).', 'kd-quiz');
+    $disabled_note = __('Enable automatic insertion above to edit this field.', 'kd-quiz');
+    $display_message = $enabled ? $base_message : $base_message . ' ' . $disabled_note;
+    printf(
+        '<p class="description kdquiz-auto-description" data-base="%1$s" data-disabled-note="%2$s">%3$s</p>',
+        esc_attr($base_message),
+        esc_attr($disabled_note),
+        esc_html($display_message)
+    );
 }
 
 function kdquiz_heading_match_field() {
     $option = get_option('kdquiz_heading_match', '');
+    $enabled = (int) get_option('kdquiz_enable_auto_insert', 0) === 1;
+    $disabled_attr = $enabled ? '' : ' disabled="disabled"';
     printf(
-        '<input type="text" name="%1$s" value="%2$s" />',
+        '<input type="text" class="regular-text kdquiz-auto-setting" name="%1$s" value="%2$s"%3$s />',
         esc_attr('kdquiz_heading_match'),
-        esc_attr($option)
+        esc_attr($option),
+        $disabled_attr
     );
-    echo '<p class="description">' . esc_html__('Optional text filter for headings; supports `*` wildcards (e.g. `*Quiz*`) to target specific titles.', 'kd-quiz') . '</p>';
+    $base_message = __('Optional text filter for headings; supports `*` wildcards (e.g. `*Quiz*`) to target specific titles.', 'kd-quiz');
+    $disabled_note = __('Enable automatic insertion above to edit this field.', 'kd-quiz');
+    $display_message = $enabled ? $base_message : $base_message . ' ' . $disabled_note;
+    printf(
+        '<p class="description kdquiz-auto-description" data-base="%1$s" data-disabled-note="%2$s">%3$s</p>',
+        esc_attr($base_message),
+        esc_attr($disabled_note),
+        esc_html($display_message)
+    );
+}
+
+function kdquiz_container_selector_field() {
+    $option = get_option('kdquiz_container_selector', '.entry-content, .post-content, main');
+    $enabled = (int) get_option('kdquiz_enable_auto_insert', 0) === 1;
+    $disabled_attr = $enabled ? '' : ' disabled="disabled"';
+    printf(
+        '<input type="text" name="%1$s" value="%2$s" class="large-text kdquiz-auto-setting"%3$s />',
+        esc_attr('kdquiz_container_selector'),
+        esc_attr($option),
+        $disabled_attr
+    );
+    $base_message = __('Limits auto insertion to specific content wrappers (comma-separated selectors, e.g. `.entry-content, .post-content, main`). Leave blank to scan the entire document.', 'kd-quiz');
+    $disabled_note = __('Enable automatic insertion above to edit this field.', 'kd-quiz');
+    $display_message = $enabled ? $base_message : $base_message . ' ' . $disabled_note;
+    printf(
+        '<p class="description kdquiz-auto-description" data-base="%1$s" data-disabled-note="%2$s">%3$s</p>',
+        esc_attr($base_message),
+        esc_attr($disabled_note),
+        esc_html($display_message)
+    );
 }
 
 function kdquiz_min_distance_field() {
     $option = (int) get_option('kdquiz_min_distance', 0);
+    $enabled = (int) get_option('kdquiz_enable_auto_insert', 0) === 1;
+    $disabled_attr = $enabled ? '' : ' disabled="disabled"';
     printf(
-        '<input type="number" name="%1$s" value="%2$s" min="0" max="100" step="1" /> %%',
+        '<input type="number" class="kdquiz-auto-setting" name="%1$s" value="%2$s" min="0" step="1"%3$s /> px',
         esc_attr('kdquiz_min_distance'),
-        esc_attr($option)
+        esc_attr($option),
+        $disabled_attr
     );
-    echo '<p class="description">' . esc_html__('Minimum scroll threshold (as a percentage of the viewport height) before the auto-inserted quiz appears. Set to 0 to allow insertion near the top.', 'kd-quiz') . '</p>';
+    $base_message = __('Minimum scroll threshold in pixels before the auto-inserted quiz renders. Set to 0 to allow insertion near the top of the container.', 'kd-quiz');
+    $disabled_note = __('Enable automatic insertion above to edit this field.', 'kd-quiz');
+    $display_message = $enabled ? $base_message : $base_message . ' ' . $disabled_note;
+    printf(
+        '<p class="description kdquiz-auto-description" data-base="%1$s" data-disabled-note="%2$s">%3$s</p>',
+        esc_attr($base_message),
+        esc_attr($disabled_note),
+        esc_html($display_message)
+    );
+}
+
+function kdquiz_auto_logging_field() {
+    $enabled = (int) get_option('kdquiz_enable_auto_insert', 0) === 1;
+    $logging_enabled = (int) get_option('kdquiz_enable_auto_insert_logging', 0);
+    $disabled_attr = $enabled ? '' : ' disabled="disabled"';
+    printf(
+        '<label><input type="checkbox" class="kdquiz-auto-setting" name="%1$s" value="1"%2$s %3$s /> %4$s</label>',
+        esc_attr('kdquiz_enable_auto_insert_logging'),
+        checked(1, $logging_enabled, false),
+        $disabled_attr,
+        esc_html__('Log auto-placement decisions to the browser console for debugging.', 'kd-quiz')
+    );
+    $base_message = __('When enabled, the quiz auto-placer prints detailed heading and offset diagnostics to the browser console. Disable once you finish debugging.', 'kd-quiz');
+    $disabled_note = __('Enable automatic insertion above to adjust this setting.', 'kd-quiz');
+    $display_message = $enabled ? $base_message : $base_message . ' ' . $disabled_note;
+    printf(
+        '<p class="description kdquiz-auto-description" data-base="%1$s" data-disabled-note="%2$s">%3$s</p>',
+        esc_attr($base_message),
+        esc_attr($disabled_note),
+        esc_html($display_message)
+    );
+}
+function kdquiz_migrate_min_distance_option() {
+    if (get_option('kdquiz_min_distance_migrated')) {
+        return;
+    }
+
+    $existing = get_option('kdquiz_min_distance', null);
+    if (null === $existing) {
+        update_option('kdquiz_min_distance_migrated', 1);
+        return;
+    }
+
+    $existing = absint($existing);
+
+    if ($existing <= 100) {
+        // Assume legacy percent value and approximate one viewport as ~8px per percent (≈800px @100%).
+        $approx_pixels = (int) round($existing * 8);
+        update_option('kdquiz_min_distance', $approx_pixels);
+    } else {
+        update_option('kdquiz_min_distance', $existing);
+    }
+
+    update_option('kdquiz_min_distance_migrated', 1);
+}
+
+function kdquiz_enqueue_settings_admin_assets() {
+    if (!function_exists('get_current_screen')) {
+        return;
+    }
+
+    $screen = get_current_screen();
+    if (!$screen || 'kdquiz_question_page_kdquiz-settings' !== $screen->id) {
+        return;
+    }
+
+    $script_path = '../assets/kd-admin-quiz.min.js';
+    $script_full_path = plugin_dir_path(__FILE__) . $script_path;
+    $script_url = plugins_url($script_path, __FILE__);
+    $version = file_exists($script_full_path) ? (string) filemtime($script_full_path) : false;
+
+    wp_enqueue_script('kdquiz-admin-settings', $script_url, [], $version ?: null, true);
 }
