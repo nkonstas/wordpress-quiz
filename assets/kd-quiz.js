@@ -35,7 +35,7 @@ class kdQuiz {
       "description",
       "Allows you to create a simple interactive quiz on any page or post, requires Wordpress"
     );
-    this.createMeta(this.quizElement, "softwareVersion", "1.3.4");
+        this.createMeta(this.quizElement, "softwareVersion", "1.3.5");
     this.createMeta(this.quizElement, "operatingSystem", "Web/Wordpress");
 
     const authorDiv = document.createElement("div");
@@ -300,19 +300,23 @@ class kdQuizMgr {
     }
 
     document.addEventListener("DOMContentLoaded", () => {
+      const debug = !!kdQuizAjax.debug_auto_insert;
+
       const selectors = [kdQuizAjax.element_selector].filter(Boolean);
       if (kdQuizAjax.legacy_element_selector) {
         selectors.push(kdQuizAjax.legacy_element_selector);
       }
 
-      if (kdQuizAjax.debug_auto_insert) {
+      if (debug) {
         console.log("[kdquiz] auto insert bootstrap", {
           elementSelector: kdQuizAjax.element_selector,
           legacySelector: kdQuizAjax.legacy_element_selector,
           autoInsertEnabled: !!kdQuizAjax.auto_insert_enabled,
           containerSelector: kdQuizAjax.container_selector,
-          headingSelector: kdQuizAjax.heading_selector,
-          headingMatch: kdQuizAjax.heading_match,
+          insertBefore: kdQuizAjax.insert_before_selectors,
+          insertAfter: kdQuizAjax.insert_after_selectors,
+          avoidSelectors: kdQuizAjax.avoid_selectors,
+          selectorMatch: kdQuizAjax.selector_match,
           minDistancePx: kdQuizAjax.min_distance,
         });
       }
@@ -326,21 +330,31 @@ class kdQuizMgr {
           parseInt(kdQuizAjax.min_distance, 10) || 0
         );
 
-        const headingMatchPattern = kdQuizAjax.heading_match.trim();
-        let headingMatchRegex = null;
-        if (headingMatchPattern) {
-          const escapedPattern = headingMatchPattern
+        const selectorMatchPattern = (kdQuizAjax.selector_match || "").trim();
+        let selectorMatchRegex = null;
+        if (selectorMatchPattern) {
+          const escapedPattern = selectorMatchPattern
             .replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&")
             .replace(/\*/g, ".*");
-          headingMatchRegex = new RegExp(escapedPattern, "i");
+          selectorMatchRegex = new RegExp(escapedPattern, "i");
         }
+
+        const parseSelectors = (value) =>
+          (value || "")
+            .split(",")
+            .map((part) => part.trim())
+            .filter(Boolean);
+
+        const beforeSelectors = parseSelectors(kdQuizAjax.insert_before_selectors || "h2, h3");
+        const afterSelectors = parseSelectors(kdQuizAjax.insert_after_selectors);
+        const avoidSelectors = parseSelectors(kdQuizAjax.avoid_selectors);
 
         const containers = containerSelector
           ? Array.from(document.querySelectorAll(containerSelector))
           : [document.body];
 
         if (!containers.length) {
-          if (kdQuizAjax.debug_auto_insert) {
+          if (debug) {
             console.warn(
               "[kdquiz] no containers matched selector, aborting auto insert",
               containerSelector
@@ -350,67 +364,137 @@ class kdQuizMgr {
         }
 
         const container = containers[0];
-        if (kdQuizAjax.debug_auto_insert) {
-          console.log("[kdquiz] evaluating container", containerSelector || "(document.body)", {
-            container,
-            headingSelector: kdQuizAjax.heading_selector,
-          });
-        }
 
-        const containerTop =
-          container.getBoundingClientRect().top + window.scrollY;
-        const candidates = Array.from(
-          container.querySelectorAll(kdQuizAjax.heading_selector)
-        );
-
-        let insertionHeading = null;
-        candidates.forEach((heading, index) => {
-          const headingTop = heading.getBoundingClientRect().top + window.scrollY;
-          const relativeTop = headingTop - containerTop;
-          const matchesPattern =
-            !headingMatchRegex || headingMatchRegex.test(heading.textContent);
-
-          if (kdQuizAjax.debug_auto_insert) {
-            console.log("[kdquiz] evaluating heading", {
-              index,
-              text: heading.textContent.trim(),
-              containerTop: Math.round(containerTop),
-              headingTop: Math.round(headingTop),
-              relativeTop: Math.round(relativeTop),
-              minDistancePx,
-              matchesPattern,
-            });
+        if (avoidSelectors.length && container.matches && avoidSelectors.some((selector) => {
+          try {
+            return container.matches(selector);
+          } catch (error) {
+            return false;
           }
-
-          if (!insertionHeading && relativeTop >= minDistancePx && matchesPattern) {
-            insertionHeading = heading;
-          }
-        });
-
-        if (!insertionHeading) {
-          if (kdQuizAjax.debug_auto_insert) {
-            console.warn("[kdquiz] auto insert aborted, no headings satisfied offset/pattern", {
-              totalCandidates: candidates.length,
-              minDistancePx,
-              headingMatch: headingMatchPattern || "(none)",
+        })) {
+          if (debug) {
+            console.warn("[kdquiz] primary container matches avoidance selectors, aborting auto insert", {
+              container,
+              avoidSelectors,
             });
           }
           return;
         }
 
-        if (kdQuizAjax.debug_auto_insert) {
-          console.log("[kdquiz] auto insert target found", {
-            headingText: insertionHeading.textContent.trim(),
-            minDistancePx,
+        const containerTop =
+          container.getBoundingClientRect().top + window.scrollY;
+
+        const matchesAnySelector = (node, selectorsList) =>
+          selectorsList.some((selector) => {
+            try {
+              return node.matches(selector);
+            } catch (error) {
+              if (debug) {
+                console.warn("[kdquiz] invalid selector skipped", selector, error);
+              }
+              return false;
+            }
           });
+
+        const matchesPattern = (node) =>
+          !selectorMatchRegex || selectorMatchRegex.test((node.textContent || "").trim());
+
+        const insertQuiz = (node, mode) => {
+          const wrapper = document.createElement("div");
+          wrapper.id = kdQuizAjax.element_selector.replace("#", "");
+          wrapper.className = "kdquiz-container kd-quiz-container";
+
+          if (mode === "after") {
+            if (node.nextSibling) {
+              node.parentNode.insertBefore(wrapper, node.nextSibling);
+            } else {
+              node.parentNode.appendChild(wrapper);
+            }
+          } else {
+            node.parentNode.insertBefore(wrapper, node);
+          }
+
+          if (debug) {
+            console.log(`[kdquiz] auto insert ${mode} target`, {
+              headingText: (node.textContent || "").trim(),
+              minDistancePx,
+            });
+          }
+
+          this.fetchQuestionsAndCreateQuiz(wrapper);
+          return true;
+        };
+
+        const walk = (node, selectorsList, mode) => {
+          if (matchesAnySelector(node, avoidSelectors)) {
+            if (debug) {
+              console.log("[kdquiz] skipping subtree (avoid selector match)", {
+                node,
+                selectorsList: avoidSelectors,
+              });
+            }
+            return false;
+          }
+
+          if (matchesAnySelector(node, selectorsList)) {
+            const relativeTop =
+              node.getBoundingClientRect().top + window.scrollY - containerTop;
+            const passesPattern = matchesPattern(node);
+
+            if (debug) {
+              console.log("[kdquiz] evaluating candidate", {
+                node,
+                mode,
+                relativeTop: Math.round(relativeTop),
+                minDistancePx,
+                passesPattern,
+              });
+            }
+
+            if (passesPattern && relativeTop >= minDistancePx) {
+              return insertQuiz(node, mode);
+            }
+          }
+
+          for (let i = 0; i < node.children.length; i += 1) {
+            if (walk(node.children[i], selectorsList, mode)) {
+              return true;
+            }
+          }
+
+          return false;
+        };
+
+        const traverseContainer = (selectorsList, mode) => {
+          if (!selectorsList.length) {
+            return false;
+          }
+
+          for (let i = 0; i < container.children.length; i += 1) {
+            if (walk(container.children[i], selectorsList, mode)) {
+              return true;
+            }
+          }
+
+          return false;
+        };
+
+        if (traverseContainer(beforeSelectors, "before")) {
+          return;
         }
 
-        const newDiv = document.createElement("div");
-        newDiv.id = kdQuizAjax.element_selector.replace("#", "");
-        newDiv.className = "kdquiz-container kd-quiz-container";
-        insertionHeading.parentNode.insertBefore(newDiv, insertionHeading);
-        this.fetchQuestionsAndCreateQuiz(newDiv);
-        return;
+        if (traverseContainer(afterSelectors, "after")) {
+          return;
+        }
+
+        if (debug) {
+          console.warn("[kdquiz] no valid placement found inside container", {
+            minDistancePx,
+            beforeSelectors,
+            afterSelectors,
+            avoidSelectors,
+          });
+        }
       } else if (quizElements.length > 0) {
         // If there are already quiz elements, fetch questions for the first one
         this.fetchQuestionsAndCreateQuiz(quizElements[0]);

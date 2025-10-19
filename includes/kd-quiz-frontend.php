@@ -56,8 +56,14 @@ add_action('wp_enqueue_scripts', function () {
 
     $questions = absint(get_option('kdquiz_number_questions', 5));
     $min_distance = max(0, absint(get_option('kdquiz_min_distance', 0)));
+    $insert_before = get_option('kdquiz_insert_before_selectors', '');
+    $insert_after  = get_option('kdquiz_insert_after_selectors', '');
+    $avoid_selectors = get_option('kdquiz_avoid_selectors', '.site-footer, .site-sidebar');
     $container_selector = get_option('kdquiz_container_selector', '.entry-content, .post-content, main');
     $container_selector = is_string($container_selector) ? sanitize_text_field($container_selector) : '';
+    $insert_before = is_string($insert_before) && '' !== trim($insert_before) ? sanitize_text_field($insert_before) : 'h2, h3';
+    $insert_after = is_string($insert_after) ? sanitize_text_field($insert_after) : '';
+    $avoid_selectors = is_string($avoid_selectors) ? sanitize_text_field($avoid_selectors) : '.site-footer, .site-sidebar';
     $style_option = kdquiz_normalize_style_slug(get_option('kdquiz_card_style', 'kdquiz_style_1'));
 
     $debug_auto_insert = apply_filters('kdquiz_auto_insert_debug', (int) get_option('kdquiz_enable_auto_insert_logging', 0) === 1);
@@ -70,8 +76,10 @@ add_action('wp_enqueue_scripts', function () {
         'questions'           => $questions > 0 ? $questions : 5,
         'style'               => $style_option,
         'auto_insert_enabled' => (int) get_option('kdquiz_enable_auto_insert', 0),
-        'heading_selector'    => sanitize_text_field(get_option('kdquiz_heading_selector', 'h2, h3')),
-        'heading_match'       => sanitize_text_field(get_option('kdquiz_heading_match', '')),
+        'insert_before_selectors' => $insert_before,
+        'insert_after_selectors'  => $insert_after,
+        'avoid_selectors'     => $avoid_selectors,
+        'selector_match'      => sanitize_text_field(get_option('kdquiz_selector_match', '')),
         'min_distance'        => $min_distance,
         'container_selector'  => $container_selector,
         'debug_auto_insert'   => (bool) $debug_auto_insert,

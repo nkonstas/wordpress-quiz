@@ -3,7 +3,7 @@ Contributors: nkonstas
 Tags: quiz, education, engagement, shortcode, ajax
 Requires at least: 5.4
 Tested up to: 6.8
-Stable tag: 1.3.4
+Stable tag: 1.3.5
 Requires PHP: 7.2
 License: GPLv3 or later
 License URI: https://github.com/nkonstas/wordpress-quiz/blob/main/LICENSE
@@ -37,8 +37,8 @@ Yes. Head to **Quiz Questions → Import Questions**, paste a JSON payload with 
 = Does the plugin track personal data? =
 No. The plugin stores aggregate view and answer counts per question only.
 
-= 1.3.4 =
-Quality-of-life release: new JSON example in the importer, updated review checklist, and rebuilt bundles for the 1.3.4 package.
+= 1.3.5 =
+Security and standards tidy-up: tightens escaping on the auto-insert settings markup, refreshes the reviewer checklist, and ships rebuilt bundles for 1.3.5.
 
 == Screenshots ==
 1. Manage questions and see engagement metrics in the WordPress admin.
@@ -47,10 +47,16 @@ Quality-of-life release: new JSON example in the importer, updated review checkl
 4. Front-end quiz card with score summary.
 
 == Changelog ==
+= 1.3.5 =
+* Escapes any optional `disabled`/`aria-disabled` attributes emitted by the auto-insert settings UI so the markup stays PHPCS-compliant (`includes/kd-quiz-settings.php`).
+* Documents the reviewer feedback follow-up in `ReviewFixes.txt` and bumps the plugin version metadata to 1.3.5.
+* Recompiles the front-end/admin assets so the distributed package advertises version 1.3.5.
+
 = 1.3.4 =
 * Adds an inline JSON example below the importer textarea so editors can copy the expected payload shape (`includes/kd-quiz-import.php`).
 * Adds concise help text under each Quiz Settings control so site owners know how auto-insert and styling options behave (`includes/kd-quiz-settings.php`).
 * Switches the minimum-distance control to pixels, introduces a container selector, and disables the placement fields unless auto insertion is active so automatic quizzes stay within the main content area (`includes/kd-quiz-settings.php`, `assets/kd-quiz.js`).
+* Replaces the single heading selector with dedicated “insert before”, “insert after”, and “never insert inside” lists so auto placement follows predictable priorities (`includes/kd-quiz-settings.php`, `assets/kd-quiz.js`).
 * Adds a toggle to enable verbose console logging so you can trace heading selection and offsets while debugging auto placement (`includes/kd-quiz-settings.php`, `assets/kd-quiz.js`).
 * Documents all security/prefix fixes in `ReviewFixes.txt` for easy reviewer handoff (e.g. `ReviewFixes.txt:1`).
 * Rebuilds scripts and metadata so the distributed bundles advertise version 1.3.4.
@@ -93,6 +99,9 @@ Quality-of-life release: new JSON example in the importer, updated review checkl
 * Refreshed readme to pass the WordPress.org validator and declared testing up to WordPress 6.5.
 
 == Upgrade Notice ==
+= 1.3.5 =
+Security tidy-up to satisfy the WordPress.org review: auto-insert settings now escape their `disabled` attributes and the bundled assets were rebuilt for 1.3.5.
+
 = 1.3.4 =
 Quality-of-life release: new JSON example in the importer, inline quiz-setting help, auto-insert scoped by container with pixel distances, updated review checklist, and rebuilt bundles for the 1.3.4 package.
 

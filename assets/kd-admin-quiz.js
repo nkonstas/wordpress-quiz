@@ -2,7 +2,7 @@
 
 (function () {
   document.addEventListener('DOMContentLoaded', function () {
-    var toggle = document.querySelector('input[name="kdquiz_enable_auto_insert"]');
+    var toggle = document.querySelector('input[type="checkbox"][name="kdquiz_enable_auto_insert"]');
 
     if (!toggle) {
       return;
