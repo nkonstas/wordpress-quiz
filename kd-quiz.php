@@ -11,7 +11,7 @@
  * Plugin Name:       KD Quiz – Interactive Quiz
  * Plugin URI:        https://github.com/nkonstas/wordpress-quiz
  * Description:       Allows you to create a simple interactive quiz on any page or post
- * Version:           1.3.5
+ * Version:           1.4.0
  * Domain Path:       /languages
  * Requires at least: 5.4
  * Requires PHP:      7.2

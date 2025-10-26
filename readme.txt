@@ -3,7 +3,7 @@ Contributors: nkonstas
 Tags: quiz, education, engagement, shortcode, ajax
 Requires at least: 5.4
 Tested up to: 6.8
-Stable tag: 1.3.5
+Stable tag: 1.4.0
 Requires PHP: 7.2
 License: GPLv3 or later
 License URI: https://github.com/nkonstas/wordpress-quiz/blob/main/LICENSE
@@ -37,8 +37,8 @@ Yes. Head to **Quiz Questions → Import Questions**, paste a JSON payload with 
 = Does the plugin track personal data? =
 No. The plugin stores aggregate view and answer counts per question only.
 
-= 1.3.5 =
-Security and standards tidy-up: tightens escaping on the auto-insert settings markup, refreshes the reviewer checklist, and ships rebuilt bundles for 1.3.5.
+= 1.4.0 =
+Switches the Edit Question page to enqueue its JavaScript through WordPress core, adds a reusable admin helper script, and rebuilds the packaged assets for 1.4.0.
 
 == Screenshots ==
 1. Manage questions and see engagement metrics in the WordPress admin.
@@ -47,6 +47,11 @@ Security and standards tidy-up: tightens escaping on the auto-insert settings ma
 4. Front-end quiz card with score summary.
 
 == Changelog ==
+= 1.4.0 =
+* Replaces the inline `<script>` block on the Edit Question screen with a proper admin enqueue that loads a dedicated asset (`includes/kd-quiz-editing.php`, `assets/kd-admin-answer-sync.js`).
+* Adds a minified build of the new admin helper and updates the npm build chain to regenerate it along with the existing bundles (`assets/kd-admin-answer-sync.min.js`, `package.json`).
+* Ensures `build-release.sh` installs dependencies when needed, runs `npm run build`, and then packages the freshly compiled assets into the release ZIP.
+
 = 1.3.5 =
 * Escapes any optional `disabled`/`aria-disabled` attributes emitted by the auto-insert settings UI so the markup stays PHPCS-compliant (`includes/kd-quiz-settings.php`).
 * Documents the reviewer feedback follow-up in `ReviewFixes.txt` and bumps the plugin version metadata to 1.3.5.
@@ -99,6 +104,9 @@ Security and standards tidy-up: tightens escaping on the auto-insert settings ma
 * Refreshed readme to pass the WordPress.org validator and declared testing up to WordPress 6.5.
 
 == Upgrade Notice ==
+= 1.4.0 =
+Required for WordPress.org review parity: admin scripts now load through `wp_enqueue_script()` and the build/release tooling regenerates every asset before packaging.
+
 = 1.3.5 =
 Security tidy-up to satisfy the WordPress.org review: auto-insert settings now escape their `disabled` attributes and the bundled assets were rebuilt for 1.3.5.
 
