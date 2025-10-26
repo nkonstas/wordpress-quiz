@@ -278,69 +278,28 @@ add_action('save_post_kdquiz_question', function ($post_id) {
     }
 });
 
-add_action('admin_print_footer_scripts-post.php', __NAMESPACE__ . '\\kdquiz_render_admin_answer_script');
-add_action('admin_print_footer_scripts-post-new.php', __NAMESPACE__ . '\\kdquiz_render_admin_answer_script');
+add_action('admin_enqueue_scripts', __NAMESPACE__ . '\\kdquiz_enqueue_answer_sync_script');
 
-/**
- * Injects a lightweight script that keeps the answer rows in sync with the selected radio button.
- */
-function kdquiz_render_admin_answer_script() {
-    global $post_type;
-
-    if ('kdquiz_question' !== $post_type) {
+function kdquiz_enqueue_answer_sync_script() {
+    if (!function_exists('get_current_screen')) {
         return;
     }
-    ?>
-    <script>
-    (function () {
-        function initKdQuizAdminAnswers() {
-        var answerRows = Array.prototype.slice.call(document.querySelectorAll('.kdquiz-answer-row'));
-        if (!answerRows.length) {
-            return;
-        }
 
-        function syncAnswerState() {
-            var selected = document.querySelector('.kdquiz-answer-radio:checked');
-            answerRows.forEach(function (row) {
-                var radio = row.querySelector('.kdquiz-answer-radio');
-                var status = row.querySelector('.kdquiz-answer-status');
-                var isSelected = radio === selected;
+    $screen = get_current_screen();
+    if (
+        !$screen ||
+        !in_array($screen->base, ['post', 'post-new'], true) ||
+        'kdquiz_question' !== $screen->post_type
+    ) {
+        return;
+    }
 
-                row.classList.toggle('is-selected', Boolean(isSelected));
+    $script_path      = '../assets/kd-admin-answer-sync.min.js';
+    $script_full_path = plugin_dir_path(__FILE__) . $script_path;
+    $script_version   = file_exists($script_full_path) ? (string) filemtime($script_full_path) : false;
+    $script_url       = plugins_url($script_path, __FILE__);
 
-                if (!status) {
-                    return;
-                }
-
-                var activeText = status.getAttribute('data-active-text') || '';
-                if (isSelected) {
-                    status.textContent = activeText;
-                    status.removeAttribute('aria-hidden');
-                    status.setAttribute('role', 'status');
-                } else {
-                    status.textContent = '';
-                    status.setAttribute('aria-hidden', 'true');
-                    status.removeAttribute('role');
-                }
-            });
-        }
-
-        var radios = Array.prototype.slice.call(document.querySelectorAll('.kdquiz-answer-radio'));
-        radios.forEach(function (radio) {
-            radio.addEventListener('change', syncAnswerState);
-        });
-
-        syncAnswerState();
-        }
-
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initKdQuizAdminAnswers);
-        } else {
-            initKdQuizAdminAnswers();
-        }
-    })();
-    </script>
-    <?php
+    wp_enqueue_script('kdquiz-admin-answer-sync', $script_url, [], $script_version ?: null, true);
 }
 
 add_filter('manage_kdquiz_question_posts_columns', function ($columns) {

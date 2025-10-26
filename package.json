@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "sass assets/kd-quiz.scss assets/kd-quiz.min.css --style=compressed --source-map && sass assets/kd-admin-quiz.scss assets/kd-admin-quiz.min.css --style=compressed --source-map && terser assets/kd-quiz.js -c -m -o assets/kd-quiz.min.js && terser assets/kd-admin-quiz.js -c -m -o assets/kd-admin-quiz.min.js"
+    "build": "sass assets/kd-quiz.scss assets/kd-quiz.min.css --style=compressed --source-map && sass assets/kd-admin-quiz.scss assets/kd-admin-quiz.min.css --style=compressed --source-map && terser assets/kd-quiz.js -c -m -o assets/kd-quiz.min.js && terser assets/kd-admin-quiz.js -c -m -o assets/kd-admin-quiz.min.js && terser assets/kd-admin-answer-sync.js -c -m -o assets/kd-admin-answer-sync.min.js"
   },
   "keywords": [],
   "author": "",

@@ -10,6 +10,26 @@ fi
 # Assign the version from the command line argument
 version="$1"
 
+# Get the script's directory and ensure we operate from it
+script_dir=$(realpath "$(dirname "$0")")
+cd "$script_dir" || { echo "Failed to change directory to script location"; exit 1; }
+
+# Ensure npm is available
+if ! command -v npm >/dev/null 2>&1; then
+    echo "Error: npm is required to build assets before packaging."
+    exit 1
+fi
+
+# Install dependencies if needed
+if [ ! -d "node_modules" ]; then
+    echo "Installing npm dependencies..."
+    npm install || { echo "npm install failed"; exit 1; }
+fi
+
+# Build/minify assets
+echo "Running npm build..."
+npm run build || { echo "npm run build failed"; exit 1; }
+
 # Define the list of files and folders to include
 include_list=("LICENSE" "readme.txt" "kd-quiz.php" "includes" "assets" "languages")
 
@@ -19,9 +39,6 @@ top_level_folder_name="kd-quiz"
 # Temp directory path
 root_temp_dir=$(mktemp -d)
 temp_dir="${root_temp_dir}/${top_level_folder_name}"
-
-# Get the script's directory
-script_dir=$(realpath "$(dirname "$0")")
 
 # Output directory for the zip file (inside the script's directory)
 output_dir="${script_dir}/releases"
@@ -34,7 +51,7 @@ mkdir -p "$output_dir"
 
 # Copy the files and folders to the temp directory
 for item in "${include_list[@]}"; do
-    cp -r "$item" "$temp_dir/"
+    cp -r "${script_dir}/${item}" "$temp_dir/"
 done
 
 # Remove existing archives
